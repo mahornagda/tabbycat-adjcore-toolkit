@@ -256,6 +256,19 @@ try:
 except Exception as e:
     check(False, "tournament.example.json is valid JSON", str(e))
 
+# The zip is the path for anyone without git, and it is built from an explicit
+# allowlist — so a file added to the repo does not reach it until someone says
+# so. run.py was missing from it for exactly that reason, which left the
+# download without the one command the docs tell people to run.
+dl = os.path.join(ROOT, "docs", "make_downloads.py")
+if os.path.exists(dl):
+    src = open(dl, encoding="utf-8").read()
+    entry = [f for f in ("run.py", "README.md", "LICENSE",
+                         "tournament.example.json", ".env.example")
+             if f'"{f}"' not in src]
+    check(not entry, "the zip includes every top-level file the docs refer to",
+          "missing from make_downloads.FILES: " + ", ".join(entry))
+
 
 # --------------------------------------------------------------------- done --
 print(f"\n{len(passes)} passed, {len(fails)} failed")

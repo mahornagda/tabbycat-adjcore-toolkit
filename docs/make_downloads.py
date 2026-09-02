@@ -41,7 +41,7 @@ TREES = {
     ".claude/skills/setup": (".md",),
 }
 
-FILES = ["README.md", "LICENSE", ".gitignore",
+FILES = ["README.md", "LICENSE", ".gitignore", "run.py",
          "tournament.example.json", ".env.example"]
 
 # Never, under any circumstances, whatever the extension rules say.
