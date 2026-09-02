@@ -98,6 +98,39 @@ look broken:</p>
 shape and genuinely unknowable in occupants — so the shape is drawn and the
 rooms stay empty until the round before has been debated.</p>
 
+<h2 id="judges">The judges</h2>
+
+<p>Names, and what each of them actually did: how many rooms, how many as chair,
+as panellist, as trainee. Click any judge and you get their round-by-round — the
+position they held, the teams in the room, and who sat alongside them.</p>
+
+{figure("fold-judges.png",
+        caption="Every judge, and what they did. All of it from the tab's own "
+                "results pages.",
+        pins=[
+    Pin(0.72, 0.375, "What each of them actually did",
+        "Rooms, chairs, panels and trainee sits — counted from the results, "
+        "not typed in anywhere.", to=(0.74, 0.432)),
+    Pin(0.33, 0.395, "Who broke",
+        "Shown only where your tab has published the adjudicator break.",
+        to=(0.22, 0.472)),
+    Pin(0.06, 0.60, "Click any judge",
+        "Their round by round: the position they held, the teams in the room, "
+        "and who sat alongside them.", to=(0.14, 0.545)),
+])}
+
+<div class="note">
+  <p><b>This appears as soon as your results are public, even if your draw is
+  switched off.</b> Those are two different settings in Tabbycat: the draw page
+  shows who is <em>about</em> to judge whom, and the results pages show who
+  <em>did</em> — with the chair and any trainee marked. Most tournaments switch
+  the draw off when they finish and leave results up forever, so who judged
+  stays public.</p>
+  <p>Room names are the exception and follow the draw setting, because your
+  tab's results pages do not carry a room column. On the sample you will see a
+  dash where the room would be — that tournament's draw is off.</p>
+</div>
+
 <h2 id="speaks">The speaker tab</h2>
 
 <p>Once a tournament releases its speaker tab, the fold shows it — and only
@@ -207,51 +240,64 @@ never be a click apart from looking like the same thing.</p>
   and the content security policy both still hold.</p>
 </div>
 
-<h2 id="gate">How “only what is public” is enforced</h2>
+<h2 id="gate">How it decides what to show</h2>
 
-<p>Two independent mechanisms, because one would not be enough to trust.</p>
+<p>It reads your tab's own settings, every time it builds. Not a copy of them
+made once — the live values.</p>
 
-<ol class="steps">
-  <li><b>Rules, re-read every build</b>
-  <p>One module decides what a spectator may see, and it reads your tab's own
-  preferences every time rather than remembering them. Rankings need results
-  public <em>and</em> the round finished <em>and</em> the round not silent. Rooms
-  and panels need the draw released and your public-draw setting to permit it.
-  The break needs breaking teams to be public. A motion needs public motions
-  and that round's motions released.</p>
-  <p>So the page follows your tab rather than tracking it. Turn something off in
-  Tabbycat and it comes off the page on the next refresh.</p></li>
+<ul>
+  <li><b>Rankings</b> need results public, the round finished, and the round not
+  silent.</li>
+  <li><b>Who judged</b> travels with the rankings, because your tab's own
+  results pages carry the panel.</li>
+  <li><b>Room names</b> and unreleased draws need the public draw switched
+  on.</li>
+  <li><b>The break</b> needs breaking teams public.</li>
+  <li><b>A motion</b> needs public motions, and that round's motions
+  released.</li>
+  <li><b>The speaker tab</b> needs the speaker tab released. Team speaks need
+  the team tab. Replies and the adjudicator tab have their own switches and are
+  never shown.</li>
+</ul>
 
-  <li><b>An allowlist, checked against the finished page</b>
-  <p>Rules stop the wrong values. They cannot stop a wrong <em>field</em> — one
-  extra key added in a hurry, carrying something private. So every key that may
-  appear in the published data is declared, and the build walks what it is about
-  to publish and refuses anything undeclared. A new field cannot leak by
-  accident; it has to be declared, which means somebody has to think about
-  it.</p></li>
+<p>So the page follows your tab. Switch something off in Tabbycat and it comes
+off the page at the next refresh — and if something is on the page you did not
+expect to be public, the fix is in Tabbycat, not here.</p>
 
-  <li><b>And the checks are the deploy gate</b>
-  <p><code>./refresh</code> will not publish a build that fails them. Not warn —
-  refuse.</p></li>
-</ol>
+<p>You do not have to take that on trust. Open <b>What's shown</b> on any page
+this builds and it lists, setting by setting, what your tab has released and
+what it has not.</p>
 
-<div class="tech">
-  <h3>The sharpest check is “no float anywhere” <span class="techflag">Technical</span></h3>
-  <p>Speaker scores and feedback averages are floats in Tabbycat. Points and
-  counts are integers. So a float anywhere in the published payload is the tell
-  that something score-shaped has got in, wherever it came from and whatever it
-  is called — a much better check than trying to enumerate the fields you do not
-  want.</p>
-  <p>The others: per-round points exist only for rounds whose rankings are
-  public; every points value is inside this format's scale, read from
-  teams-per-debate rather than assumed to be 3/2/1/0; no room name or panel
-  outside the rounds whose draw is public; silent rounds are silent; the script
-  makes no network call; the only outside references are the font host and your
-  own tab. See <code>fold/gate.py</code> and
-  <code>fold/tests/test_gate.py</code>.</p>
+<div class="note">
+  <p><b>And it refuses to publish if a check fails.</b> Not a warning — it
+  stops. So a mistake in the page cannot quietly reach the internet.</p>
 </div>
 
-<h2>Two failures that taught us something</h2>
+<div class="tech">
+  <h3>The two mechanisms, and why one would not do</h3>
+  <p>The rules above stop the wrong <em>values</em>. They cannot stop a wrong
+  <em>field</em> — one extra key added in a hurry, carrying something private.
+  So every key that may appear in the published data is declared in
+  <code>fold/gate.py</code>, and the build walks what it is about to publish and
+  raises on anything undeclared. A new field cannot leak by accident; somebody
+  has to declare it, which means somebody has to think about it.</p>
+  <p>That allowlist also enforces shape, which it did not originally: a field
+  declared as holding a scalar is checked to be one. A declaration of "a list of
+  names" once waved through a list of whole participant records — emails and
+  private URL keys included — and reported the payload clean.</p>
+  <p><code>fold/tests/test_gate.py</code> is the deploy gate, and its sharpest
+  check is about floats: speaks are floats in Tabbycat while points and counts
+  are integers, so a float outside the four declared speaker fields is the tell
+  that something score-shaped has got in, whatever it is named. The others:
+  per-round points only for rounds whose rankings are public; every points value
+  inside this format's scale, read from teams-per-debate rather than assumed to
+  be 3/2/1/0; no room name outside the draw-public rounds and no panel outside
+  the results-public ones; silent rounds silent; the script makes no network
+  call; the only outside references are the font host and your own tab.</p>
+</div>
+
+<div class="tech">
+<h3>Two failures, and the guards that came out of them</h3>
 
 <p>Both of these happened live, and both are now guarded, which is more useful
 to you than a claim that nothing goes wrong.</p>
@@ -279,6 +325,8 @@ to you than a claim that nothing goes wrong.</p>
   pickable.</p>
 </div>
 
+</div>
+
 <div class="note">
   <p><b>On the sample, “Round by round” is empty, and that is the tool working.</b>
   That tournament has finished and has since switched its public draw off, so
@@ -297,12 +345,18 @@ does not fall over.</p>
 and surge are also supported — one word in <code>tournament.json</code>.</p>
 
 <div class="note warn">
-  <p><b>We learned that the hard way.</b> A free hosting tier ran out of
-  bandwidth credits mid-tournament and refused every deploy for eighteen hours,
-  freezing the live page on a stale build right through a break-round draw going
-  out. Worse, the same provider's own quota endpoint reported plenty of credit
-  remaining while refusing every deploy — so do not trust a quota reading, and do
-  pick a host that does not meter bandwidth.</p>
+  <p><b>Use a host that does not charge for bandwidth.</b> Cloudflare Pages is
+  the default here and is free for this. A break announcement is the one moment
+  your page gets hammered, and a metered host can cut you off exactly then.</p>
+</div>
+
+<div class="tech">
+  <h3>Why that warning is there</h3>
+  <p>A free tier ran out of bandwidth credits mid-tournament and refused every
+  deploy for eighteen hours, freezing the live page on a stale build right
+  through a break-round draw going out. Worse, that provider's own quota endpoint
+  reported plenty of credit remaining while refusing every deploy — so a quota
+  reading is not evidence. Post a deploy and read the error.</p>
 </div>
 
 <hr>

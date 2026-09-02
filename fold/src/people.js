@@ -111,12 +111,21 @@ function renderTeams() {
 
 function renderJudges() {
   const root = clear(q("#v-judges"));
-  const anyPanel = DATA.rounds.some(r => r.draw_public);
+  // Keyed on panel_public, not draw_public. Who judged is published with the
+  // RESULTS, and a tournament that has ended usually has its draw switched off
+  // and its results up — so this read "no judge allocation is public yet" over
+  // a complete table of 104 judges.
+  const anyPanel = DATA.rounds.some(r => r.panel_public);
+  const anyRoom = DATA.rounds.some(r => r.draw_public);
   root.append(el("div", { class: "head" },
     el("h2", { text: "Judges" }),
     el("p", { text: anyPanel
-      ? "Who judged where, from the published allocations. Feedback, test scores and adjudication-core notes are not public and are not in this page."
-      : "No judge allocation is public yet." })));
+      ? ("Who judged where, and in what position, from the tab's own published "
+         + "results. Feedback, test scores and adjudication-core notes are not "
+         + "public and are not on this page."
+         + (anyRoom ? "" : " Room names are not published for this tournament, "
+                          + "so those show as a dash."))
+      : "Nothing about who judged is public yet." })));
 
   const rows = DATA.judges.map(j => {
     const h = jhist(j.id);

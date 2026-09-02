@@ -30,7 +30,14 @@ sys.path.insert(0, HERE)
 import mocktab
 
 SAMPLE_BANNER_CSS = """
-.samplebar{position:sticky;top:0;z-index:99;display:flex;gap:10px;align-items:center;
+/* Deliberately NOT sticky, and deliberately below everything.
+   At z-index 99 it sat above the judge sheet (60), the search palette (70) and
+   the toast (90) — so it swallowed the clicks meant for the sheet's close
+   button, and a reader who opened a judge could not shut it again. Sticky also
+   fought the page's own sticky header for the top of the screen. A bar that
+   scrolls away has neither problem, and the disclaimer only needs reading
+   once. */
+.samplebar{position:relative;z-index:1;display:flex;gap:10px;align-items:center;
   flex-wrap:wrap;padding:9px 16px;background:#3d3527;color:#f6f1e7;
   font:13px/1.45 'Inter Tight',system-ui,sans-serif}
 .samplebar b{font-weight:600}

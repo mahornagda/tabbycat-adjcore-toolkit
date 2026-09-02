@@ -99,6 +99,7 @@ ALLOWED = {
         "seq": None, "abbr": None, "name": None, "outround": None,
         "cat": None, "cat_name": None, "completed": None, "silent": None,
         "draw_status": None, "results_public": None, "draw_public": None,
+        "panel_public": None,
         "rooms": None, "teams_in": None,
         "motion": {"text": None, "reference": None, "info_slide": None},
     }),
@@ -232,6 +233,33 @@ def draw_public(r, prefs, current_seqs):
     return bool(r["seq"] in current_seqs or results_public(r, prefs))
 
 
+def panel_public(r, prefs, current_seqs):
+    """Who judged: the chair, the panellists, the trainees, and which teams were
+    in the room together.
+
+    This is a WIDER rule than draw_public, and the difference was a real bug —
+    the Judges view showed every judge with nothing against their name at a
+    tournament whose panels were public all along.
+
+    Two separate things get published at two separate moments on Tabbycat, and
+    tying both to `public_draw` conflates them:
+
+      · the DRAW page — rooms, panels, who is about to judge whom. Governed by
+        `public_draw`, and commonly switched off once a tournament ends.
+      · the RESULTS page — for each debate, the teams, their sides, their ranks
+        AND the panel, with the chair and any trainee marked. Governed by
+        `public_results`, and normally left on forever.
+
+    So once a round's results are public, its panel is public, whatever
+    `public_draw` says. Checked against a live tab: with the draw switched off,
+    /results/round/1/ still serves every panel to an anonymous visitor.
+
+    The room NAME is the exception and stays on draw_public — the public results
+    page carries no venue column, so this must not publish one either.
+    """
+    return bool(draw_public(r, prefs, current_seqs) or results_public(r, prefs))
+
+
 def motion_public(r, prefs, motions_released):
     return bool(prefs["public_motions"] and motions_released)
 
@@ -270,8 +298,15 @@ def summary(prefs, rounds, current_seqs, categories=(), teams_per_debate=4):
     if prefs["public_results"]:
         shown.append("Round rankings — who came 1st, 2nd, 3rd and 4th in each room")
         shown.append("Team points, and the fold those points build")
+        shown.append("Who judged each of those rooms — the chair, the panellists "
+                     "and any trainee. The tab's own results pages carry this, "
+                     "which is why it is here even when the draw is switched off")
     else:
         withheld.append("Round rankings — tab has public results switched off")
+        withheld.append("Who judged — that travels with the results")
+    if dp == "off":
+        withheld.append("Room names — tab has the public draw switched off, and "
+                        "the results pages carry no room column")
     if prefs["public_breaking_teams"]:
         shown.append("Break positions, exactly as announced")
         general = next((c for c in categories if c.get("is_general")), None) \

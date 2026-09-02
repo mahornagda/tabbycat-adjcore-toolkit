@@ -249,6 +249,8 @@ def pull(log=print):
         }
         row["results_public"] = gate.results_public(row, prefs)
         row["draw_public"] = gate.draw_public(row, prefs, current_seqs)
+        # Who judged is public as soon as the results are — see gate.panel_public.
+        row["panel_public"] = gate.panel_public(row, prefs, current_seqs)
         m = motion_by_round.get(r["seq"])
         row["motion"] = None
         if m and gate.motion_public(row, prefs, r["motions_released"]):
@@ -258,7 +260,7 @@ def pull(log=print):
                 "info_slide": (m.get("info_slide_plain") or m.get("info_slide") or "").strip(),
             }
         rounds.append(row)
-        if row["draw_public"] or row["results_public"]:
+        if row["panel_public"] or row["results_public"]:
             drawable.append(row)
 
     # ---- the shape of the elimination rounds (derived, never hardcoded) ----
@@ -352,7 +354,10 @@ def pull(log=print):
 
     debates = []
     for r in drawable:
-        show_panel = r["draw_public"]
+        # The panel and the room are two different permissions. The results page
+        # publishes the panel; only the draw page publishes the venue.
+        show_panel = r["panel_public"]
+        show_room = r["draw_public"]
         show_pts = r["results_public"]
         for d in draws.get(r["seq"], []):
             ts = []
@@ -374,7 +379,7 @@ def pull(log=print):
                 panel += [{"j": rid(u), "pos": POS["trainee"]} for u in (adjd.get("trainees") or [])]
             debates.append({
                 "round": r["seq"],
-                "room": (venue.get(d.get("venue")) or "") if show_panel else "",
+                "room": (venue.get(d.get("venue")) or "") if show_room else "",
                 "teams": ts, "panel": panel,
             })
 
@@ -524,7 +529,7 @@ def write_headers():
 def report(payload, html):
     d, g = payload, payload["gate"]
     pub_r = [r["abbr"] for r in d["rounds"] if r["results_public"]]
-    pub_d = [r["abbr"] for r in d["rounds"] if r["draw_public"]]
+    pub_d = [r["abbr"] for r in d["rounds"] if r["panel_public"]]
     locked = [r["abbr"] for r in d["rounds"] if r["outround"] and not r["draw_public"]]
     print(f"\nbuilt {os.path.relpath(OUT)}  ({len(html)/1024:.0f} KB, one file, no network calls)")
     print(f"  {len(d['teams'])} teams · {len(d['judges'])} judges · {len(d['debates'])} rooms shown")

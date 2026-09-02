@@ -90,29 +90,27 @@ platitudes. And that vocabulary is chosen from your format: British
 Parliamentary words would be nonsense at a two-team tournament, so which set is
 in play is read from your tab.</p>
 
-<h2>How it is enforced: mask, then gate</h2>
+<h2>How those rules are kept</h2>
 
-<p>Two mechanisms, and the split is the whole design. <b>The mask is the cheap
-fix. The gate is the proof.</b></p>
+<p>Two separate things, because relying on either alone would be a bad idea.</p>
 
 <ol class="steps">
-  <li><b>The mask, before the model sees anything</b>
-  <p>Every name, team, school, code and round in the comments is replaced with a
-  placeholder — <code>[a person]</code>, <code>[a team]</code>,
-  <code>[a round]</code> — <em>before</em> the comments are sent anywhere. The
-  model cannot repeat what it was never given.</p></li>
+  <li><b>Names are taken out before the AI ever sees a comment</b>
+  <p>Every person, team, school and round in the comments is swapped for
+  <code>[a person]</code>, <code>[a team]</code>, <code>[a round]</code> first.
+  It cannot repeat a name it was never given.</p></li>
 
-  <li><b>The gate, after each draft, with a redraft</b>
-  <p>Every draft is checked against every rule. If anything fails, the specific
-  violations are handed back as an edit instruction and it redrafts, up to four
-  times. A leak is not something the reviewer has to catch by eye.</p>
-  <p>On the demo tournament, 18 of 37 needed at least one correction and one
-  needed four. That is not the model being careless — it is the rules being
-  tighter than ordinary writing, which is the intended trade.</p></li>
+  <li><b>Every draft is checked, and rewritten if it fails</b>
+  <p>Each summary is read against every rule above. If something slips through,
+  the exact problem is handed back and it writes it again — up to four times. So
+  a leak is not something you have to spot by eye.</p>
+  <p>On the demo tournament, 18 of 37 summaries needed at least one correction.
+  That is not carelessness; the rules are tighter than ordinary writing, which
+  is the point.</p></li>
 
-  <li><b>The gate again, at build time</b>
-  <p>Because a hand-edit leaks just as easily as a draft. The build refuses to
-  publish if anything fails.</p></li>
+  <li><b>And checked once more before anything is published</b>
+  <p>Because you are allowed to edit the summaries by hand, and a hand-edit can
+  break a rule just as easily. If anything fails, nothing publishes.</p></li>
 </ol>
 
 <div class="tech">
@@ -152,20 +150,18 @@ fix. The gate is the proof.</b></p>
   and stays banned.</p>
 </div>
 
-<h2 id="access">Who can read what</h2>
+<h2 id="access">Who can read whose</h2>
 
-<p>A judge's page is addressed by a hash of their private Tabbycat URL. That one
-fact is the entire access model, and it is deliberately the only one:</p>
+<p>A judge reaches their page with the private link Tabbycat already gave them —
+the same one they use to submit ballots and feedback. Nothing else opens it.</p>
 
 <ul>
-  <li>The published site contains <b>no private URLs</b>, so a copy of it is not
-  a set of credentials.</li>
-  <li>There is <b>no index, no listing and no search</b>, so holding the site
-  tells you nothing about who is in it.</li>
-  <li><b>Names live inside the files, not in their addresses</b>, so a directory
-  of hashes leaks nothing even if a host were to list it.</li>
-  <li>A judge's page is reachable only by someone who already has their private
-  URL — which is exactly the property Tabbycat already relies on for ballots.</li>
+  <li>There is <b>no list, no search and no index</b>. Having the site tells you
+  nothing about who is on it.</li>
+  <li>The site holds <b>no private links</b> of its own, so a copy of it is not
+  a set of keys.</li>
+  <li>Names are <b>inside</b> the pages, never in their web addresses.</li>
+  <li>You send each judge one link. That is the only way in.</li>
 </ul>
 
 <div class="tech">

@@ -129,6 +129,8 @@ def main():
     rounds = {r["seq"]: r for r in d["rounds"]}
     res_ok = {s for s, r in rounds.items() if r["results_public"]}
     draw_ok = {s for s, r in rounds.items() if r["draw_public"]}
+    # Panels are public as soon as results are, which is wider than draw_public.
+    panel_ok = {s for s, r in rounds.items() if r.get("panel_public")}
 
     # 3 — points only for rounds whose rankings are public
     stray = [(s["t"], k) for s in d["standings"] for k in s["by_round"] if int(k) not in res_ok]
@@ -146,10 +148,11 @@ def main():
 
     # 4 — rooms and panels only where the draw is public
     bad_room = {x["round"] for x in d["debates"] if x["round"] not in draw_ok and x["room"]}
-    bad_panel = {x["round"] for x in d["debates"] if x["round"] not in draw_ok and x["panel"]}
+    bad_panel = {x["round"] for x in d["debates"]
+                 if x["round"] not in panel_ok and x["panel"]}
     check(not bad_room, f"no room name outside {sorted(draw_ok)}"
           + ("" if not bad_room else f" — leaked in {sorted(bad_room)}"))
-    check(not bad_panel, f"no judge panel outside {sorted(draw_ok)}"
+    check(not bad_panel, f"no judge panel outside {sorted(panel_ok)}"
           + ("" if not bad_panel else f" — leaked in {sorted(bad_panel)}"))
 
     bad_dpts = [x["round"] for x in d["debates"]
