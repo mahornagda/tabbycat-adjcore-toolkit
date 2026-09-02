@@ -8,7 +8,7 @@ PAGE = {
 <div class="btnrow">
   <a class="btn" href="./start/">Set it up</a>
   <a class="btn ghost" href="./samples/fold/">See a sample first</a>
-  <a class="btn ghost" href="https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit">Code on GitHub</a>
+  <a class="btn ghost" href="https://github.com/mahornagda/tabbycat-adjcore-toolkit">Code on GitHub</a>
 </div>
 
 <div class="note">
@@ -216,9 +216,9 @@ login form, which is how you sign in at all.</p>
   <section>
     <h4>Code</h4>
     <ul>
-      <li><a href="https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit">The repository</a></li>
-      <li><a href="https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit/blob/main/automation/CLAUDE-CODE.md">The Claude Code doc</a></li>
-      <li><a href="https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit/issues">Report a problem</a></li>
+      <li><a href="https://github.com/mahornagda/tabbycat-adjcore-toolkit">The repository</a></li>
+      <li><a href="https://github.com/mahornagda/tabbycat-adjcore-toolkit/blob/main/automation/CLAUDE-CODE.md">The Claude Code doc</a></li>
+      <li><a href="https://github.com/mahornagda/tabbycat-adjcore-toolkit/issues">Report a problem</a></li>
     </ul>
   </section>
 </div>

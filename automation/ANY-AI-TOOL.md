@@ -14,7 +14,7 @@ Set up the Tabbycat Adjcore Toolkit for my tournament.
 
 It is a Python project. Do this and nothing else:
 
-1. Clone https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit and cd into it.
+1. Clone https://github.com/mahornagda/tabbycat-adjcore-toolkit and cd into it.
 2. Run:  python3 run.py check      — tell me anything it says is missing.
 3. Run:  python3 run.py demo       — this needs no tournament and no login.
                                      Show me the result. If it fails, stop and
@@ -57,7 +57,7 @@ adjudication core's name. That stop is the feature.
 There is a shorter way, because the repository ships a skill:
 
 ```
-git clone https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit
+git clone https://github.com/mahornagda/tabbycat-adjcore-toolkit
 cd tabbycat-adjcore-toolkit
 claude
 ```

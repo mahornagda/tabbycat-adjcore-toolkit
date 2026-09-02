@@ -74,7 +74,7 @@ feedback submissions — a large intervarsity. A pull takes well under a minute.
 that scales with judges rather than with data is writing the feedback summaries:
 one model call each, several at a time, so a hundred judges is minutes rather than
 seconds. If you run something on that scale and it struggles,
-<a href="https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit/issues">say so</a>.</p>
+<a href="https://github.com/mahornagda/tabbycat-adjcore-toolkit/issues">say so</a>.</p>
 
 <div class="tech">
   <h3>Why a partial break is genuinely hard, not just unimplemented</h3>

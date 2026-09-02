@@ -51,7 +51,7 @@ One command does everything, and it works the same on Windows, macOS and Linux.
 Use `python` instead of `python3` on Windows.
 
 ```
-git clone https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit
+git clone https://github.com/mahornagda/tabbycat-adjcore-toolkit
 cd tabbycat-adjcore-toolkit
 python3 -m pip install requests
 

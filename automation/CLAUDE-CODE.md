@@ -7,7 +7,7 @@ setup with you.
 ## The short version
 
 ```
-git clone https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit
+git clone https://github.com/mahornagda/tabbycat-adjcore-toolkit
 cd tabbycat-adjcore-toolkit
 claude
 ```

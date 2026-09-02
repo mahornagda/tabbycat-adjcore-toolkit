@@ -2,7 +2,7 @@ AGENT_PROMPT = """Set up the Tabbycat Adjcore Toolkit for my tournament.
 
 It is a Python project. Do this and nothing else:
 
-1. Clone https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit and cd into it.
+1. Clone https://github.com/mahornagda/tabbycat-adjcore-toolkit and cd into it.
 2. Run:  python3 run.py check      — tell me anything it says is missing.
 3. Run:  python3 run.py demo       — this needs no tournament and no login.
                                      Show me the result. If it fails, stop and
@@ -88,7 +88,7 @@ publish judge feedback without you reading it. Both of those are yours.</p>
 <ol class="steps">
   <li><b>Get it, and check your machine</b>
   <div class="os" data-os="mac linux">
-  <div class="copywrap"><pre><code>git clone https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit
+  <div class="copywrap"><pre><code>git clone https://github.com/mahornagda/tabbycat-adjcore-toolkit
 cd tabbycat-adjcore-toolkit
 python3 -m pip install requests
 python3 run.py check</code></pre></div>
@@ -99,7 +99,7 @@ python3 run.py check</code></pre></div>
   <div class="os" data-os="win">
   <p>Open <b>PowerShell</b> — press the Start key, type <code>powershell</code>,
   press enter.</p>
-  <div class="copywrap"><pre><code>git clone https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit
+  <div class="copywrap"><pre><code>git clone https://github.com/mahornagda/tabbycat-adjcore-toolkit
 cd tabbycat-adjcore-toolkit
 python -m pip install requests
 python run.py check</code></pre></div>
@@ -227,7 +227,7 @@ do. Otherwise:</p>
         rules four times. Run <code>run.py feedback --step write</code> again;
         it only does the missing ones.</td></tr>
     <tr><td>Anything else</td>
-        <td><a href="https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit/issues">Open
+        <td><a href="https://github.com/mahornagda/tabbycat-adjcore-toolkit/issues">Open
         an issue</a> with what you ran and what it printed. Not your token.</td></tr>
   </tbody>
 </table>
