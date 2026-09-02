@@ -369,6 +369,18 @@ def main():
     with open(os.path.join(DIST, "_headers"), "w") as fh:
         fh.write(HEADERS)
 
+    # The zip mirror is part of the site, and this function empties dist/ on
+    # every run — so building it here is the only way the download cannot end up
+    # missing or stale relative to the pages that link to it.
+    try:
+        import make_downloads
+        make_downloads.main()
+    except SystemExit as e:
+        if e.code:
+            raise
+    except Exception as e:
+        print(f"  ! could not build the download: {e}")
+
     print(f"built docs/dist — {len(built)} pages")
     for slug, kb in built:
         print(f"  {slug:18s} {kb} KB")
