@@ -289,6 +289,12 @@ def shell(slug, title, lede, body, depth):
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{html.escape(title)} — {SITE}</title>
 <meta name="description" content="{html.escape(lede[:180])}">
+<!-- The policy travels with the page as well as in _headers. A host matches
+     header rules its own way — Cloudflare's `/` rule does not fire for the bare
+     root, and `/*.html` never fires at all when pretty URLs are served from
+     directory indexes — so the page carries its own copy. Everything except
+     frame-ancestors works from a meta tag. -->
+<meta http-equiv="Content-Security-Policy" content="{_CSP_DOCS}">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><text y=%2225%22 font-size=%2226%22>⚖️</text></svg>">
 <style>{CSS}</style>
 </head>
@@ -367,7 +373,7 @@ def main():
         print(f"  samples copied: {sorted(os.listdir(os.path.join(DIST, 'samples')))}")
 
     with open(os.path.join(DIST, "_headers"), "w") as fh:
-        fh.write(HEADERS)
+        fh.write(_headers_text())
 
     # The zip mirror is part of the site, and this function empties dist/ on
     # every run — so building it here is the only way the download cannot end up
@@ -394,12 +400,58 @@ def main():
     return 0
 
 
-HEADERS = """/*
+# Cloudflare and Netlify both read ONE `_headers` file, at the root of what is
+# published. Each tool ships its own policy for when it is published on its own,
+# but under this site those files are never read — so the sample paths get their
+# policies restated here. Without this the samples would be served weaker than
+# the real thing, which makes them misleading evidence.
+_CSP_STATIC = ("default-src 'none'; script-src 'unsafe-inline'; "
+               "style-src 'unsafe-inline' https://fonts.googleapis.com; "
+               "font-src https://fonts.gstatic.com; img-src data:; "
+               "base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
+
+_CSP_DOCS = ("default-src 'none'; script-src 'unsafe-inline'; "
+             "style-src 'unsafe-inline' https://fonts.googleapis.com; "
+             "font-src https://fonts.gstatic.com; img-src 'self' data:; "
+             "base-uri 'none'; form-action 'none'")
+
+
+def _docs_csp_rules():
+    """A rule per docs page, generated from PAGES.
+
+    Not `/*`: a wildcard would match the sample paths too, and where two rules
+    both set Content-Security-Policy the browser enforces the intersection — so
+    the docs policy's missing `connect-src` would silently override the feedback
+    sample's `connect-src 'self'` and stop a judge's page from loading.
+
+    Not `/*.html` either, which was the first attempt: Cloudflare serves
+    `/fold/` as a directory index, so that pattern matched nothing at all and the
+    pages went out with no policy.
+    """
+    out = []
+    for slug, *_ in PAGES:
+        path = "/" if slug == "index" else f"/{slug}/*"
+        out.append(f"\n{path}\n  Content-Security-Policy: {_CSP_DOCS}\n")
+        if slug != "index":
+            out.append(f"\n/{slug}\n  Content-Security-Policy: {_CSP_DOCS}\n")
+    return "".join(out)
+
+
+def _headers_text():
+    return f"""/*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+{_docs_csp_rules()}
+
+/samples/fold/*
+  Content-Security-Policy: {_CSP_STATIC}; connect-src 'none'
+
+/samples/tester-tracking/*
+  Content-Security-Policy: {_CSP_STATIC}; connect-src 'none'
 
 /samples/feedback/*
+  Content-Security-Policy: {_CSP_STATIC}; connect-src 'self'
   X-Robots-Tag: noindex, nofollow
   X-Frame-Options: DENY
 
