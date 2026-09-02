@@ -189,7 +189,54 @@ tbody tr:last-child td{border-bottom:0}
 .btn.ghost{background:var(--panel);color:var(--ink);border:1px solid var(--line-2)}
 
 /* the two reading levels */
-.tech{display:none}
+.levels button[disabled]{opacity:.45;cursor:default}
+.levels .count{font-variant-numeric:tabular-nums;opacity:.75;margin-left:5px}
+/* Revealed technical blocks say what they are and flash once, because the
+   switch was firing correctly and looking broken: on a page whose technical
+   sections are three screens down, nothing appeared to happen. */
+.tech{display:none;border-left:3px solid var(--plum);background:var(--panel);
+  border-radius:0 10px 10px 0;padding:4px 20px 14px;margin:26px 0;
+  position:relative}
+.tech::before{content:"Technical detail";position:absolute;top:-10px;left:16px;
+  font:600 .68rem var(--sans);letter-spacing:.09em;text-transform:uppercase;
+  color:var(--plum);background:var(--plum-sk);padding:2px 9px;border-radius:20px}
+.tech>:first-child{margin-top:22px}
+@keyframes techflash{from{box-shadow:0 0 0 4px var(--plum-sk)}
+                     to{box-shadow:0 0 0 0 transparent}}
+.tech.justshown{animation:techflash 1.1s ease-out}
+.nodetail{margin-left:10px;font-size:.85rem;color:var(--faint)}
+
+/* ---- pick your operating system -------------------------------------------
+   Two of the commands genuinely differ, and a page that shows only the macOS
+   form tells a Windows reader this is not for them. */
+.osbar{display:flex;gap:0;border:1px solid var(--line-2);border-radius:9px;
+  overflow:hidden;background:var(--panel);width:max-content;margin:20px 0 4px}
+.osbar button{border:0;background:none;font:500 .9rem var(--sans);color:var(--dim);
+  padding:8px 15px;cursor:pointer}
+.osbar button[aria-pressed="true"]{background:var(--accent);color:#FFFDF9}
+.os{display:none}
+html.os-mac .os[data-os~="mac"],
+html.os-win .os[data-os~="win"],
+html.os-linux .os[data-os~="linux"]{display:block}
+
+/* ---- the big choice at the top of the setup page --------------------------- */
+.pick{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  margin:26px 0 10px}
+.pick a{border:0;display:block;background:var(--panel);border:1px solid var(--line-2);
+  border-radius:13px;padding:22px 22px 20px;box-shadow:var(--shadow)}
+.pick a:hover{border-color:var(--accent)}
+.pick .n{font:600 .72rem var(--sans);letter-spacing:.1em;text-transform:uppercase;
+  color:var(--accent)}
+.pick h3{margin:8px 0 6px;font-family:var(--serif);font-size1.2rem;font-size:1.2rem}
+.pick p{margin:0;color:var(--dim);font-size:.95rem}
+.pick .t{display:inline-block;margin-top:12px;font-size:.86rem;color:var(--faint)}
+
+/* a copy button on the paste blocks */
+.copywrap{position:relative}
+.copywrap button{position:absolute;top:9px;right:9px;border:1px solid var(--line-2);
+  background:var(--panel);color:var(--dim);border-radius:7px;padding:4px 10px;
+  font:500 .8rem var(--sans);cursor:pointer}
+.copywrap button:hover{color:var(--ink)}
 html.level-tech .tech{display:block}
 html.level-tech li.tech,html.level-tech span.tech{display:list-item}
 html.level-tech span.tech{display:inline}
@@ -230,18 +277,117 @@ JS = """
 (function () {
   var KEY = "adjcore-docs-level";
   var root = document.documentElement;
-  function set(level, remember) {
-    root.classList.toggle("level-tech", level === "tech");
+  var blocks = document.querySelectorAll(".tech");
+  var techBtn = document.querySelector('.levels button[data-level="tech"]');
+
+  // How many technical sections this page actually has, on the button. The
+  // switch used to give no feedback at all: on a page with none it did
+  // literally nothing, and elsewhere the sections were below the fold, so it
+  // read as broken. Saying "Technical 3" — or disabling it — fixes that
+  // before anybody has to click to find out.
+  if (techBtn) {
+    if (!blocks.length) {
+      techBtn.disabled = true;
+      techBtn.title = "This page has no extra technical detail";
+      var n = document.createElement("span");
+      n.className = "nodetail";
+      n.textContent = "no extra detail on this page";
+      techBtn.parentNode.parentNode.appendChild(n);
+    } else {
+      var c = document.createElement("span");
+      c.className = "count";
+      c.textContent = blocks.length;
+      techBtn.appendChild(c);
+    }
+  }
+
+  function inView(el) {
+    var r = el.getBoundingClientRect();
+    return r.top < window.innerHeight && r.bottom > 80;
+  }
+
+  function set(level, fromClick) {
+    var on = level === "tech";
+    root.classList.toggle("level-tech", on);
     document.querySelectorAll(".levels button").forEach(function (b) {
       b.setAttribute("aria-pressed", String(b.dataset.level === level));
     });
-    if (remember) { try { localStorage.setItem(KEY, level); } catch (e) {} }
+    if (fromClick) { try { localStorage.setItem(KEY, level); } catch (e) {} }
+
+    if (on && fromClick && blocks.length) {
+      // Flash what appeared, and if none of it is on screen, take the reader to
+      // the first one — otherwise the click has no visible consequence.
+      var anyVisible = false;
+      blocks.forEach(function (b) {
+        b.classList.remove("justshown");
+        void b.offsetWidth;                 // restart the animation
+        b.classList.add("justshown");
+        if (inView(b)) anyVisible = true;
+      });
+      if (!anyVisible) {
+        blocks[0].scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
   }
+
   var saved = "plain";
   try { saved = localStorage.getItem(KEY) || "plain"; } catch (e) {}
+  if (saved === "tech" && !blocks.length) { saved = "tech"; }
   set(saved, false);
   document.querySelectorAll(".levels button").forEach(function (b) {
-    b.addEventListener("click", function () { set(b.dataset.level, true); });
+    b.addEventListener("click", function () {
+      if (!b.disabled) set(b.dataset.level, true);
+    });
+  });
+
+  // ---- which operating system's commands to show ----------------------------
+  var OSKEY = "adjcore-docs-os";
+  function guessOS() {
+    var p = (navigator.userAgentData && navigator.userAgentData.platform)
+         || navigator.platform || "";
+    p = p.toLowerCase();
+    if (p.indexOf("win") === 0 || p.indexOf("windows") >= 0) return "win";
+    if (p.indexOf("linux") >= 0 && p.indexOf("android") < 0) return "linux";
+    return "mac";
+  }
+  function setOS(os, remember) {
+    root.classList.remove("os-mac", "os-win", "os-linux");
+    root.classList.add("os-" + os);
+    document.querySelectorAll(".osbar button").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.dataset.os === os));
+    });
+    if (remember) { try { localStorage.setItem(OSKEY, os); } catch (e) {} }
+  }
+  var os = null;
+  try { os = localStorage.getItem(OSKEY); } catch (e) {}
+  setOS(os || guessOS(), false);
+  document.querySelectorAll(".osbar button").forEach(function (b) {
+    b.addEventListener("click", function () { setOS(b.dataset.os, true); });
+  });
+
+  // ---- copy buttons on the paste blocks ------------------------------------
+  document.querySelectorAll(".copywrap").forEach(function (w) {
+    var pre = w.querySelector("pre");
+    if (!pre) return;
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = "Copy";
+    btn.addEventListener("click", function () {
+      var text = pre.innerText;
+      var done = function () {
+        btn.textContent = "Copied";
+        setTimeout(function () { btn.textContent = "Copy"; }, 1600);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, function () {});
+      } else {
+        var ta = document.createElement("textarea");
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        try { document.execCommand("copy"); done(); } catch (e) {}
+        document.body.removeChild(ta);
+      }
+    });
+    w.appendChild(btn);
   });
 })();
 """

@@ -76,6 +76,28 @@ one model call each, several at a time, so a hundred judges is minutes rather th
 seconds. If you run something on that scale and it struggles,
 <a href="https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit/issues">say so</a>.</p>
 
+<div class="tech">
+  <h3>Why a partial break is genuinely hard, not just unimplemented</h3>
+  <p>The fold's projection rests on one property: with <em>P</em> rooms in a
+  break round, room <em>i</em> meets room <em>P+1&minus;i</em>, and that tree is
+  fixed at the break. It is what lets the page draw a bracket nobody has been
+  drawn into yet.</p>
+  <p>A partial break has no such tree. Some teams enter at the double-octofinals
+  and some skip to the octofinals, and which is which depends on the break size,
+  the room count, and the tournament's own rule about who gets the bye — a rule
+  that is not in Tabbycat's API because it is a decision, not a setting.</p>
+  <p>So <code>seedRooms()</code> returns null unless the announced break is
+  complete and divides evenly into rooms, and every view that would draw a
+  projection renders its empty state instead. Guessing would produce a bracket
+  that looks authoritative and is wrong, which is worse than an empty one — the
+  same reasoning as <a href="../how-it-works/#failures">making failures
+  loud</a>.</p>
+  <p>What would fix it: read the real elimination draw once tab publishes it
+  (which already works) and simply never project for a partial break. That is
+  most of the value, and it is a small change to <code>core.js</code> if
+  somebody wants it.</p>
+</div>
+
 <h2>Next year</h2>
 
 <p>Tabbycat changes, and a version bump could move a field this toolkit reads.

@@ -111,9 +111,15 @@ PUBLIC_DEFAULTS = {
     "public_features__public_breaking_adjs": True,
     "public_features__public_team_standings": True,
     "public_features__public_participants": True,
+    # Releases default to OFF, because that is the safe default and because a
+    # shape that wants the "not released" path must be able to get it.
     "tab_release__team_tab_released": False,
     "tab_release__speaker_tab_released": False,
     "tab_release__ballots_released": False,
+    "tab_release__replies_tab_released": False,
+    "tab_release__adjudicators_tab_released": False,
+    "tab_release__speaker_tab_limit": 0,
+    "tab_release__team_tab_limit": 0,
 }
 
 
@@ -154,6 +160,7 @@ class Tournament:
         self._rounds()
         self._draws()
         self._results()
+        self._speaks()
         self._breaks()
         self._elims()
         self._feedback()
@@ -202,8 +209,17 @@ class Tournament:
             for _ in range(int(self.sh["speakers_per_team"])):
                 sid += 1
                 tm["speakers"].append({
-                    "id": sid, "name": f"{self.rng.choice(given)} {self.rng.choice(family)}",
-                    "url": self.t_url("teams", tm["id"], "speakers", sid),
+                    "id": sid,
+                    "name": f"{self.rng.choice(given)} {self.rng.choice(family)}",
+                    "url": self.t_url("speakers", sid),
+                    "team": tm["url"],
+                    # Roughly one speaker in twenty asks not to be named on the
+                    # public tab. The sample has to contain some, or the code
+                    # that honours the flag is never exercised.
+                    "anonymous": (sid % 19 == 0),
+                    "email": f"speaker{sid}@example.invalid",
+                    "phone": None,
+                    "url_key": hashlib.sha1(f"{self.slug}:sp{sid}".encode()).hexdigest()[:8],
                 })
 
     def _adjudicators(self):
@@ -558,6 +574,95 @@ class Tournament:
         for rows in self.pairings.values():
             for row in rows:
                 row.pop("_seats", None)
+
+    def _speaks(self):
+        """Speaker scores, per speech.
+
+        Built from the team's latent strength plus noise, so the tab has a
+        believable spread rather than uniform noise. A few speeches are marked
+        `ghost` — an iron-person speech, which Tabbycat leaves out of the average
+        — because that is the case most likely to be got wrong downstream.
+        """
+        self.speeches = {}            # speaker id -> {round seq: [speech, ...]}
+        by_url = {tm["url"]: tm for tm in self.teams}
+        for tm in self.teams:
+            for i, sp in enumerate(tm["speakers"]):
+                base = 75 + tm["_strength"] * 2.2 + self.rng.gauss(0, 1.2)
+                rows = {}
+                for r in self["prelim_rounds"]:
+                    if not r["completed"]:
+                        continue
+                    if (r["seq"], tm["id"]) not in self.points:
+                        continue
+                    score = round(min(95, max(55, base + self.rng.gauss(0, 2.0))) * 2) / 2
+                    speeches = [{"score": score, "position": i + 1, "ghost": False}]
+                    # an iron-person round: one speaker gives both speeches, and
+                    # the duplicate is flagged
+                    if self.rng.random() < 0.03:
+                        speeches.append({"score": score, "position": i + 2,
+                                         "ghost": True})
+                    rows[r["seq"]] = speeches
+                self.speeches[sp["id"]] = rows
+
+    def speaker_standings(self):
+        """The speaker tab, the way Tabbycat computes it: ghosts excluded."""
+        rows = []
+        for tm in self.teams:
+            for sp in tm["speakers"]:
+                counted = [x["score"] for rs in self.speeches.get(sp["id"], {}).values()
+                           for x in rs if not x["ghost"]]
+                if not counted:
+                    continue
+                n = len(counted)
+                total = sum(counted)
+                avg = total / n
+                var = sum((c - avg) ** 2 for c in counted) / n
+                rows.append({"url": self.t_url("speakers", sp["id"]),
+                             "total": total, "avg": avg,
+                             "count": n, "stdev": var ** 0.5})
+        rows.sort(key=lambda r: -r["total"])
+        out, rank, prev = [], 0, None
+        for i, r in enumerate(rows, 1):
+            if r["total"] != prev:
+                rank, prev = i, r["total"]
+            out.append({
+                "rank": rank, "tied": sum(1 for x in rows if x["total"] == r["total"]) > 1,
+                "speaker": r["url"],
+                "metrics": [{"metric": "total", "value": r["total"]},
+                            {"metric": "average", "value": round(r["avg"], 2)},
+                            {"metric": "stdev", "value": r["stdev"]},
+                            {"metric": "count", "value": r["count"]}],
+            })
+        return out
+
+    def speaker_rounds(self):
+        out = []
+        for tm in self.teams:
+            for sp in tm["speakers"]:
+                rows = self.speeches.get(sp["id"]) or {}
+                if not rows:
+                    continue
+                out.append({"speaker": self.t_url("speakers", sp["id"]),
+                            "rounds": [{"round": self.t_url("rounds", sq),
+                                        "speeches": sps}
+                                       for sq, sps in sorted(rows.items())]})
+        return out
+
+    def team_standings(self):
+        rows = []
+        for tm in self.teams:
+            speaks = sum(x["score"] for sp in tm["speakers"]
+                         for rs in self.speeches.get(sp["id"], {}).values()
+                         for x in rs if not x["ghost"])
+            rows.append({"team": tm["url"], "pts": self.total(tm["id"]), "speaks": speaks})
+        rows.sort(key=lambda r: (-r["pts"], -r["speaks"]))
+        return [{"rank": i, "tied": False, "team": r["team"],
+                 "metrics": [{"metric": "points", "value": r["pts"]},
+                             {"metric": "speaks_sum", "value": round(r["speaks"], 1)}]}
+                for i, r in enumerate(rows, 1)]
+
+    def all_speakers(self):
+        return [sp for tm in self.teams for sp in tm["speakers"]]
 
     def _feedback(self):
         """Written feedback, from teams and from co-panellists.

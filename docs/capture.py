@@ -47,6 +47,7 @@ SHOTS = [
     ("fold", "fold-stack", "/", [], None),
     ("fold", "fold-bracket", "/", [("click", "#tab-bracket")], None),
     ("fold", "fold-sim", "/", [("click", "#tab-sim")], None),
+    ("fold", "fold-speaks", "/", [("click", "#tab-speaks")], None),
     ("fold", "fold-shown", "/", [("click", "#tab-shown")], None),
     ("feedback", "fb-landing", "/", [], None),
     ("feedback", "fb-summary", "/#a8f1cd03", [], None),

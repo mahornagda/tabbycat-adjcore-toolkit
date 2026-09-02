@@ -21,24 +21,28 @@ stake, rather than in a confusing error against their live tournament.
 toolkit is read-only by construction. If a step seems to need a write, stop and
 say so; do not work around it.
 
+## The commands
+
+There is one entry point, `run.py`, and it works identically on Windows, macOS
+and Linux. Prefer it over calling the individual scripts — it is what the docs
+tell people to use, and on Windows the shell scripts do not run at all. Use
+`python` rather than `python3` on Windows.
+
 ## Step 1 — prerequisites
 
-Check and report, in one message, rather than one at a time:
+```
+python3 run.py check
+```
 
-- `python3 --version` — 3.9 or newer.
-- `python3 -c "import requests"` — if it fails, `python3 -m pip install requests`.
-- Only if they want the feedback tool: `claude --version`. That tool shells out
-  to the Claude Code CLI to write the summaries.
-- Only if they want to publish the fold or feedback publicly:
-  `npx wrangler --version` (Cloudflare, recommended) or `npx netlify --version`.
-  Do not install anything yet; `npx` fetches on first use.
-
-If something is missing, give them the one command that fixes it and wait.
+That reports the Python version, `requests`, the `claude` CLI (needed only for
+judge feedback), `npx` (needed only for publishing), and whether a config and a
+loaded `.env` exist. Show them what it says. If something is missing it also
+prints the one command that fixes it — give them that and wait.
 
 ## Step 2 — prove it works, with no tournament involved
 
 ```
-python3 demo/verify.py --quick
+python3 run.py demo
 ```
 
 This runs all three tools against three invented tournaments. It needs no
@@ -85,29 +89,24 @@ There is deliberately nothing to ask about round counts, break categories, panel
 sizes or format. All of that is read from their tab. If they offer it anyway,
 tell them they do not need to and why.
 
-## Step 4 — write the config
-
-Copy `tournament.example.json` to `tournament.json` and fill in what they gave
-you. Leave `tournament.name` empty unless they asked for a specific display
-name — the pages take the name from the tab, which is one less thing to get
-wrong.
-
-Write `.env` from `.env.example` with their login, then `chmod 600 .env`.
-
-Never put the password in `tournament.json`. Never print it back to them.
-
-## Step 5 — connect, read-only, and show them what came back
+## Step 4 — write the config and connect
 
 ```
-set -a; . .env; set +a
-cd tester-tracking && python3 pull.py
+python3 run.py setup
 ```
 
-Then report what it found, because this is their chance to catch a wrong slug
-before anything else runs: the tournament name, how many rounds and which are
-break rounds, the break categories and their sizes, how many teams and judges,
-how many teams are in a debate. If any of that looks wrong to them, it is almost
-always the slug.
+This is interactive and asks for the three things above itself, writes
+`tournament.json` and a mode-600 `.env`, then reads the tab once and prints the
+tournament name, the round counts, the break categories and the team and judge
+counts.
+
+**Let them type the answers.** Do not supply a tab address, a slug or a token
+yourself, and do not echo the token back. If they have already told you the url
+and slug in conversation you may repeat those to them as a suggestion, but the
+values must come from them.
+
+Then show them the numbers it printed and ask whether that is their tournament.
+This is the cheap moment to catch a wrong slug.
 
 Common failures and what they actually mean:
 
@@ -122,14 +121,14 @@ Common failures and what they actually mean:
 
 ## Step 6 — run what they picked
 
-**Tester tracking** — `cd tester-tracking && ./start`, then open the address it
+**Tester tracking** — `python3 run.py testers`, then open the address it
 prints. Tell them the judges who count as testers come from Tabbycat's own
 "adjudication core" flag, and they can add more people from inside the
 dashboard. Point them at the Testing tab first; it is the one worth their time.
 
-**The fold** — `cd fold && ./refresh --dry` first. That builds the page and runs
-the gate checks without publishing anything, so they can open
-`fold/dist/index.html` and look at it. Only then `./refresh` to publish. Show
+**The fold** — `python3 run.py fold` first. That builds the page, runs the gate
+checks, and opens it so they can see exactly what a spectator would. Only then
+`python3 run.py fold --publish`. Show
 them the "results shown for" and "panels shown for" lines: those come from their
 tab's own public switches, and if something is on the page that they did not
 expect to be public, the fix is in Tabbycat, not here.
@@ -137,13 +136,17 @@ expect to be public, the fix is in Tabbycat, not here.
 **Judge feedback** — this one has a review step and it is not optional:
 
 ```
-cd feedback
-./pull.py --stats          # what written feedback exists
-./bundle.py               # replace every name with a placeholder
-./summarise.py            # write the summaries (slow — a few minutes)
-./review                  # read them yourself, in a browser
-./refresh --dry           # build and re-run every check
-./refresh                 # publish
+python3 run.py feedback
+```
+
+That runs pull, mask and write in order and then **stops**, telling them to read
+`feedback/summaries/*.json`. Do not go past that stop for them. When they say
+they have read it:
+
+```
+python3 run.py feedback --step build
+python3 run.py feedback --step check
+python3 run.py feedback --publish
 ```
 
 Tell them clearly: `summarise.py` writes to `summaries/*.json`, they are meant

@@ -7,6 +7,10 @@ const VIEWS = [
   { id: "bracket", label: "Break rounds", render: renderBracket },
   { id: "sim",     label: "Simulator",    render: renderSim },
   { id: "rounds",  label: "Round by round", render: renderRounds },
+  // The speaker tab appears only when the tournament has released it. Building
+  // the tab list from the payload rather than showing an empty view means a
+  // reader never clicks through to "not released yet".
+  ...((DATA.speaker_scores || null) ? [{ id: "speaks", label: "Speaker tab", render: renderSpeaks }] : []),
   { id: "teams",   label: "Teams",        render: renderTeams },
   { id: "judges",  label: "Judges",       render: renderJudges },
   { id: "schools", label: "Schools",      render: renderSchools },

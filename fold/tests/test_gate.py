@@ -6,8 +6,9 @@ dist/index.html (not raw.json, which could drift) and checks invariants that
 would each be violated by a real leak:
 
   1. every key is declared in gate.ALLOWED
-  2. nothing in the payload is a float — speaker scores and feedback averages are
-     floats in Tabbycat, points and counts are not, so a stray float is a tell
+  2. no float appears anywhere EXCEPT the declared speaker fields — speaks and
+     feedback averages are floats in Tabbycat while points and counts are not,
+     so a float outside those fields is still the tell it always was
   3. per-round points only exist for rounds whose rankings are public
   4. rooms and panels only exist for rounds whose draw is public
   5. per-team points are inside the format's scale (3/2/1/0 in a four-team
@@ -67,10 +68,63 @@ def main():
     except gate.GateViolation as e:
         check(False, str(e))
 
-    # 2 — no floats anywhere
-    f = floats(d)
-    check(not f, "no float anywhere in the payload (speaks and feedback are floats)"
+    # 2 — no float OUTSIDE the declared speaker fields.
+    #
+    # This was "no float anywhere", which was the single sharpest check here:
+    # speaks and feedback averages are floats in Tabbycat while points and counts
+    # are integers, so any float was evidence something score-shaped had got in,
+    # whatever it was called. Publishing a released speaker tab means floats are
+    # now legitimate — but only in four places, so the check is narrowed rather
+    # than dropped and keeps working everywhere else.
+    import re as _re
+    ALLOWED_FLOAT = (
+        _re.compile(r"^\$\.speaker_scores\[\d+\]\.(total|avg|stdev)$"),
+        _re.compile(r"^\$\.speaker_scores\[\d+\]\.by_round\.\d+\[\d+\]\.score$"),
+        _re.compile(r"^\$\.standings\[\d+\]\.speaks$"),
+    )
+    f = [x for x in floats(d)
+         if not any(rx.match(x.split(" = ")[0]) for rx in ALLOWED_FLOAT)]
+    check(not f, "no float outside the declared speaker fields"
           + ("" if not f else " — found " + "; ".join(f[:5])))
+
+    # 2b — the released tabs, and everything that must travel with them
+    g = d["gate"]
+    spk = d.get("speaker_scores")
+    if g.get("speaker_tab_released"):
+        check(spk is not None and len(spk) > 0,
+              f"the speaker tab is released, so it is published ({len(spk or [])} rows)")
+        # Tabbycat's anonymous flag: the scores stay, the name goes.
+        named_anon = [r for r in (spk or []) if r.get("anon") and r.get("name")]
+        check(not named_anon,
+              f"no anonymous speaker is named ({sum(1 for r in (spk or []) if r.get('anon'))} anonymous)"
+              + ("" if not named_anon else f" — {[r['name'] for r in named_anon][:3]}"))
+        # A tab limit means the tournament publishes only that far down.
+        cut = g.get("speaker_tab_limit") or 0
+        over = [r["rank"] for r in (spk or []) if cut and (r.get("rank") or 0) > cut]
+        check(not over,
+              (f"the tab stops at the published limit of {cut}" if cut
+               else "no tab limit is set, so the whole tab is published")
+              + ("" if not over else f" — ranks past it: {sorted(set(over))[:5]}"))
+    else:
+        check(spk is None,
+              "the speaker tab is not released, so no speaker data is published"
+              + ("" if spk is None else f" — {len(spk)} rows LEAKED"))
+
+    speaks = [r for r in d["standings"] if "speaks" in r]
+    if g.get("team_tab_released"):
+        check(bool(speaks), f"the team tab is released, so team speaks are published "
+                            f"({len(speaks)} teams)")
+    else:
+        check(not speaks, "the team tab is not released, so no team speaks are published"
+              + ("" if not speaks else f" — {len(speaks)} teams LEAKED"))
+
+    # Releasing the speaker tab does not release replies or the adjudicator tab.
+    # Each has its own switch, and neither is ever published by this tool.
+    body = html.lower()
+    for word, why in (("replies_avg", "reply-speech averages"),
+                      ("replies_count", "reply-speech counts"),
+                      ("draw_strength", "draw strength")):
+        check(word not in body, f"no {why} anywhere in the page")
 
     rounds = {r["seq"]: r for r in d["rounds"]}
     res_ok = {s for s, r in rounds.items() if r["results_public"]}

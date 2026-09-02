@@ -13,14 +13,22 @@
   "institutions": 8,
   "panel_size": 2,
   "break_categories": [
-    {"name": "Open", "slug": "open", "size": 4, "general": true}
+    {
+      "name": "Open",
+      "slug": "open",
+      "size": 4,
+      "general": true
+    }
   ],
   "rounds_completed": 3,
   "silent_rounds": [],
   "break_announced": false,
   "elim_progress": {},
   "feedback_per_debate": 0.5,
-  "public": {"public_features__public_draw": "current",
-             "public_features__public_breaking_teams": false,
-             "tab_release__team_tab_released": false}
+  "public": {
+    "public_features__public_draw": "current",
+    "public_features__public_breaking_teams": false,
+    "tab_release__team_tab_released": false,
+    "tab_release__speaker_tab_released": false
+  }
 }

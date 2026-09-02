@@ -45,9 +45,9 @@ PAGE = {
     <span class="pill p">A public web page</span>
     <h3>The fold, and the simulator</h3>
     <p>The points stack folding into the break, the break itself, the
-    break-round bracket — built strictly from what your tab has already made
-    public. Spectators can click who they think goes through and watch the
-    next round re-form.</p>
+    break-round bracket, and the speaker tab once you release it — all built
+    strictly from what your tab has already made public. Spectators can click
+    who they think goes through and watch the next round re-form.</p>
     <p class="go"><a href="./fold/">How it works</a> ·
        <a href="./samples/fold/">Sample</a></p>
   </div>
@@ -83,9 +83,12 @@ third publishes judge feedback. Both of those are the CAP's to hold.</p>
 
 <h2>Try them before you install anything</h2>
 
-<p>All three samples below run on an invented tournament — invented teams,
-invented judges, invented motions, invented feedback. There is no real
-tournament data anywhere in them, and there is nothing to set up:</p>
+<p>Nothing to set up — just open them.</p>
+
+<p><b>The fold's sample is a real tournament</b>, because everything that page
+can show was already public on that tournament's own Tabbycat. The other two
+run on an invented tournament, with invented teams, judges and feedback,
+because those two publish things no tab makes public.</p>
 
 <div class="cards">
   <div class="card">
@@ -94,7 +97,8 @@ tournament data anywhere in them, and there is nothing to set up:</p>
   </div>
   <div class="card">
     <h3><a href="./samples/fold/">The fold &rarr;</a></h3>
-    <p>Try the <b>Simulator</b> tab and pick some winners.</p>
+    <p>A real 110-team intervarsity. Try the <b>Simulator</b> tab and pick some
+    winners, then the <b>Speaker tab</b>.</p>
   </div>
   <div class="card">
     <h3><a href="./samples/feedback/">Judge feedback &rarr;</a></h3>

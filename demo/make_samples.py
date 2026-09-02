@@ -40,10 +40,22 @@ SAMPLE_BANNER_CSS = """
 """
 
 
-def banner(tool, tour, docs_url):
+def banner(tool, tour, docs_url, live=False):
+    """The banner has to tell the truth about which kind of sample this is.
+
+    Two of the three run on an invented tournament. The fold's runs on a real
+    one, because the fold publishes nothing that is not already public on the
+    tab it reads — so the honest demo is the real thing, and saying "invented"
+    over real names would be a lie in the one place it matters most.
+    """
+    if live:
+        what = ("<b>A real tournament.</b> Everything here was already public on "
+                "its own Tabbycat — this page adds nothing to it.")
+    else:
+        what = ("<b>Sample.</b> Invented tournament, invented people. Nothing "
+                "here is real data.")
     return f"""<div class="samplebar">
-  <b>Sample</b><span class="dot">·</span>
-  <span>Invented tournament, invented people. Nothing here is real data.</span>
+  <span>{what}</span>
   <span class="dot">·</span>
   <span>{tour}</span>
   <span class="dot">·</span>
@@ -144,7 +156,7 @@ def build_tester_tracking(env, tour, docs_url):
 
 
 # ------------------------------------------------------------------- the fold --
-def build_fold(env, tour, docs_url):
+def build_fold(env, tour, docs_url, live=False):
     src = os.path.join(ROOT, "fold")
     run([sys.executable, "build.py"], src, env, "building the fold")
     run([sys.executable, "tests/test_gate.py"], src, env, "gate checks")
@@ -152,7 +164,8 @@ def build_fold(env, tour, docs_url):
     os.makedirs(dest, exist_ok=True)
     html = open(os.path.join(src, "dist", "index.html"), encoding="utf-8").read()
     html = html.replace("</style>", SAMPLE_BANNER_CSS + "</style>", 1)
-    html = html.replace("<body>", "<body>\n" + banner("the fold simulator", tour, docs_url), 1)
+    html = html.replace("<body>", "<body>\n"
+                        + banner("the fold simulator", tour, docs_url, live), 1)
     with open(os.path.join(dest, "index.html"), "w", encoding="utf-8") as fh:
         fh.write(html)
     for extra in ("_headers",):
@@ -272,6 +285,12 @@ def main():
     ap.add_argument("--skip-summaries", action="store_true")
     ap.add_argument("--jobs", type=int, default=4)
     ap.add_argument("--docs-url", default="/")
+    ap.add_argument("--fold-from-live", action="store_true",
+                    help="build the fold sample from the tab in tournament.json "
+                         "and .env, instead of the fake one. The fold publishes "
+                         "only what a tab has already made public, so a real "
+                         "tournament is the honest demo — and the one that shows "
+                         "real scale.")
     a = ap.parse_args()
 
     port = free_port()
@@ -294,8 +313,31 @@ def main():
         print("  tester tracking")
         facts["tester_tracking"] = build_tester_tracking(env, tour, a.docs_url + "tester-tracking/")
     if a.only in (None, "fold"):
-        print("  the fold")
-        facts["fold"] = build_fold(env, tour, a.docs_url + "fold/")
+        if a.fold_from_live:
+            sys.path.insert(0, os.path.join(ROOT, "core"))
+            import config
+            live_url, live_slug = config.tab()
+            live_env = dict(os.environ, TABBY_BASE=live_url, TABBY_SLUG=live_slug)
+            if not (live_env.get("TABBY_TOKEN") or live_env.get("TABBY_USER")):
+                sys.exit("no sign-in loaded — set .env first "
+                         "(set -a; . .env; set +a)")
+            print(f"  the fold — from the LIVE tab at {live_url}/{live_slug}")
+            print("    only what that tab has already made public reaches the page;"
+                  "\n    the gate decides that, not this script")
+            import subprocess as _sp
+            name = _sp.run([sys.executable, "-c",
+                            "import sys,os;sys.path.insert(0,'core');import tabread;"
+                            "print(tabread.TabRead().api('').get('name',''))"],
+                           cwd=ROOT, env=live_env, capture_output=True,
+                           text=True).stdout.strip().splitlines()
+            live_tour = name[-1] if name else "a real tournament"
+            facts["fold"] = build_fold(live_env, live_tour,
+                                       a.docs_url + "fold/", live=True)
+            facts["fold"]["live"] = True
+            facts["fold"]["tournament"] = live_tour
+        else:
+            print("  the fold")
+            facts["fold"] = build_fold(env, tour, a.docs_url + "fold/")
     if a.only in (None, "feedback"):
         print("  judge feedback")
         facts["feedback"] = build_feedback(env, tour, a.docs_url + "feedback/",

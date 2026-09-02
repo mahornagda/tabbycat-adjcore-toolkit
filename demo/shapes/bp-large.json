@@ -12,14 +12,39 @@
   "adjcore": 6,
   "institutions": 24,
   "panel_size": 3,
-  "panel_size_from_round": {"1": 2, "2": 3},
+  "panel_size_from_round": {
+    "1": 2,
+    "2": 3
+  },
   "break_categories": [
-    {"name": "Open", "slug": "open", "size": 16, "general": true},
-    {"name": "Novice", "slug": "novice", "size": 8, "general": false}
+    {
+      "name": "Open",
+      "slug": "open",
+      "size": 16,
+      "general": true
+    },
+    {
+      "name": "Novice",
+      "slug": "novice",
+      "size": 8,
+      "general": false
+    }
   ],
   "rounds_completed": 9,
-  "silent_rounds": [8, 9],
+  "silent_rounds": [
+    8,
+    9
+  ],
   "break_announced": true,
-  "elim_progress": {"open": 1.5, "novice": 1},
-  "feedback_per_debate": 0.30
+  "elim_progress": {
+    "open": 1.5,
+    "novice": 1
+  },
+  "feedback_per_debate": 0.3,
+  "public": {
+    "tab_release__speaker_tab_released": true,
+    "tab_release__team_tab_released": true,
+    "tab_release__replies_tab_released": false,
+    "tab_release__adjudicators_tab_released": false
+  }
 }

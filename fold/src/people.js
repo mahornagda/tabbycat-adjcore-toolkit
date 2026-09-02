@@ -82,7 +82,11 @@ function renderTeams() {
     el("h2", { text: "Teams" }),
     el("p", { text: plural(DATA.teams.length, "team") + " in the field. Click any row for the full path through the tournament." })));
 
-  const rows = DATA.teams.map(t => ({ t, ...tally(t.id), pts: (ST.get(t.id) || {}).pts || 0 }));
+  const rows = DATA.teams.map(t => ({ t, ...tally(t.id), pts: (ST.get(t.id) || {}).pts || 0,
+                                      speaks: (ST.get(t.id) || {}).speaks }));
+  // Total speaks are on the payload only when the tournament has released its
+  // team tab, so the column exists exactly when the tab's own does.
+  const hasSpeaks = rows.some(r => r.speaks != null);
   root.append(dataTable(rows, [
     { k: "name", label: "Team", get: r => r.t.name, w: "23%",
       cell: r => el("span", { class: "nmwrap" },
@@ -91,6 +95,8 @@ function renderTeams() {
     { k: "inst", label: "School", get: r => r.t.inst, w: "24%" },
     { k: "region", label: "Region", get: r => r.t.region || "—" },
     { k: "pts", label: "Pts", num: true, get: r => r.pts },
+    ...(hasSpeaks ? [{ k: "speaks", label: "Speaks", num: true,
+                       get: r => r.speaks == null ? "" : r.speaks }] : []),
     { k: "firsts", label: "1sts", num: true, get: r => r.firsts },
     { k: "seconds", label: "2nds", num: true, get: r => r.seconds },
     { k: "thirds", label: "3rds", num: true, get: r => r.thirds },

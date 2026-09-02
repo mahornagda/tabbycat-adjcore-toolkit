@@ -37,7 +37,7 @@ OUT = os.path.join(DIST, "index.html")
 
 # The scripts are concatenated in this order; each one only uses what came before.
 SCRIPTS = ["flags.js", "core.js", "fold.js", "bracket.js", "rounds.js",
-           "people.js", "sheets.js", "sim.js", "app.js"]
+           "people.js", "sheets.js", "speaks.js", "sim.js", "app.js"]
 
 # Tabbycat's internal side codes. Which set is in play depends on how many teams
 # are in a debate, and that is a live preference — so this is a lookup, not a
@@ -50,6 +50,129 @@ def side_order(teams_per_debate):
     return SIDE_CODES.get(int(teams_per_debate or 4),
                           [f"s{i}" for i in range(int(teams_per_debate or 4))])
 POS = {"chair": "C", "panellist": "P", "trainee": "T"}
+
+
+def _try(t, path):
+    """A read that is allowed to come back empty rather than kill the build.
+
+    These endpoints exist on every Tabbycat but a given tournament may have
+    nothing in them, and an older version may not have the route at all. An
+    empty speaker tab is a real state; it must not be confused with a failure,
+    which is why the break endpoint next door does exactly the opposite.
+    """
+    try:
+        return t.api(path, paginate=True)
+    except Exception as e:
+        print(f"  ({path} unavailable: {str(e)[:70]})")
+        return []
+
+
+def _metric(row, name):
+    for m in row.get("metrics") or []:
+        if m.get("metric") == name:
+            return m.get("value")
+    return None
+
+
+def build_speaker_tab(prefs, got, rounds):
+    """The released speaker tab, or None if it is not released.
+
+    Returning None rather than an empty list matters: the allowlist then has no
+    `speaker_scores` key to check, so "not released" and "released but empty"
+    cannot be confused on the page.
+
+    Three rules are Tabbycat's, not ours, and all three are obeyed rather than
+    reimplemented:
+      · `anonymous` on a speaker — the scores stay, the name goes;
+      · `speaker_tab_limit` — how far down the tournament publishes;
+      · `ghost` on a speech — an iron-person speech, which Tabbycat leaves out
+        of the average. It is marked rather than dropped, so a short count has a
+        visible reason.
+    """
+    if not gate.speaker_tab_public(prefs):
+        return None
+    stand = got.get("spk_stand") or []
+    if not stand:
+        return []
+
+    # A speaker record carries an email, a phone number, a barcode and a
+    # url_key — which IS that person's private ballot URL. Take the name, the
+    # team and the anonymous flag; leave the rest in the response object.
+    who = {}
+    for sp in got.get("speakers") or []:
+        who[sp["url"]] = {
+            "name": sp.get("name") or "",
+            "anon": bool(sp.get("anonymous")),
+            "team": rid(sp.get("team")),
+        }
+
+    seq_by_round = {r["url"] if isinstance(r, str) else r: None for r in ()}
+    per_round = {}
+    for row in got.get("spk_rounds") or []:
+        rows = {}
+        for entry in row.get("rounds") or []:
+            sq = seq_of(entry.get("round"))
+            if sq is None:
+                continue
+            speeches = []
+            for sp in entry.get("speeches") or []:
+                if sp.get("score") is None:
+                    continue
+                speeches.append({"score": round(float(sp["score"]), 2),
+                                 "pos": sp.get("position"),
+                                 "ghost": bool(sp.get("ghost"))})
+            if speeches:
+                rows[str(sq)] = speeches
+        per_round[row.get("speaker")] = rows
+
+    cut = gate.tab_cut(prefs, "speaker")
+    out = []
+    for row in sorted(stand, key=lambda r: (r.get("rank") or 10**6)):
+        if cut and (row.get("rank") or 10**6) > cut:
+            continue
+        url = row.get("speaker")
+        w = who.get(url, {"name": "", "anon": False, "team": None})
+        stdev = _metric(row, "stdev")
+        out.append({
+            "rank": row.get("rank"),
+            "tied": bool(row.get("tied")),
+            # Anonymous means the tournament's own page shows no name here.
+            "name": None if w["anon"] else (w["name"] or None),
+            "anon": w["anon"],
+            "t": w["team"],
+            "total": _round(_metric(row, "total")),
+            "avg": _round(_metric(row, "average")),
+            "count": _int(_metric(row, "count")),
+            "stdev": None if stdev is None else round(float(stdev), 2),
+            "by_round": per_round.get(url, {}),
+        })
+    return out
+
+
+def apply_team_speaks(prefs, got, standings):
+    """Add each team's total speaks, but only if the team tab is released."""
+    if not gate.team_speaks_public(prefs):
+        return
+    cut = gate.tab_cut(prefs, "team")
+    by_team = {}
+    for row in got.get("team_stand") or []:
+        if cut and (row.get("rank") or 10**6) > cut:
+            continue
+        by_team[rid(row.get("team"))] = _round(_metric(row, "speaks_sum"))
+    for row in standings:
+        v = by_team.get(row["t"])
+        if v is not None:
+            row["speaks"] = v
+
+
+def _round(v):
+    """Speaks to two places. Tabbycat carries full float precision, and a
+    standard deviation of 1.118033988749895 on a public page is noise."""
+    return None if v is None else round(float(v), 2)
+
+
+def _int(v):
+    return None if v is None else int(v)
 
 
 def rid(url):
@@ -78,6 +201,13 @@ def pull(log=print):
             "venues": ex.submit(t.api, "venues", True),
             "motions": ex.submit(t.api, "motions", True),
             "srounds": ex.submit(lambda: t.api("teams/standings/rounds", paginate=True)),
+            # The speaker tab and the team tab. Fetched unconditionally because
+            # the account is allowed to read them; whether a single number
+            # reaches the page is decided below, by the release switches.
+            "spk_stand": ex.submit(lambda: _try(t, "speakers/standings")),
+            "spk_rounds": ex.submit(lambda: _try(t, "speakers/standings/rounds")),
+            "team_stand": ex.submit(lambda: _try(t, "teams/standings")),
+            "speakers": ex.submit(lambda: _try(t, "speakers")),
         }
     got = {k: v.result() for k, v in f.items()}
 
@@ -283,8 +413,14 @@ def pull(log=print):
             "by_round": by, "sides": sides_by_team.get(tm["id"], {}),
         })
 
-    g = {**prefs, "current_round": current_seq}
-    g.update(gate.summary(prefs, rounds, current_seqs))
+    # ---- the speaker tab and team speaks, each on its own switch ----
+    speaker_scores = build_speaker_tab(prefs, got, rounds)
+    apply_team_speaks(prefs, got, standings)
+
+    g = {**prefs, "current_round": current_seq,
+         "speaker_tab_public": gate.speaker_tab_public(prefs),
+         "team_speaks_public": gate.team_speaks_public(prefs)}
+    g.update(gate.summary(prefs, rounds, current_seqs, cats, teams_per_debate))
 
     payload = {
         "built_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
@@ -301,6 +437,8 @@ def pull(log=print):
         "gate": g, "rounds": rounds, "categories": cats, "teams": teams,
         "judges": judges, "debates": debates, "breaks": breaks, "standings": standings,
     }
+    if speaker_scores is not None:
+        payload["speaker_scores"] = speaker_scores
     gate.assert_clean(payload)
     return payload
 

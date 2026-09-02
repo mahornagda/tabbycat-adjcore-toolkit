@@ -47,32 +47,35 @@ tournament, these will not work for you, and that is deliberate.
 
 ## Getting started
 
-The fastest path, if you have [Claude Code](https://claude.com/claude-code):
+One command does everything, and it works the same on Windows, macOS and Linux.
+Use `python` instead of `python3` on Windows.
 
 ```
 git clone https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit
 cd tabbycat-adjcore-toolkit
-claude
-```
-
-then type `/setup`. It asks you six questions and does the rest. The long
-version of the same thing, and the manual path if you would rather do it
-yourself, are in [automation/CLAUDE-CODE.md](automation/CLAUDE-CODE.md) and in
-the docs.
-
-**Try it without your tournament first.** There is a fake Tabbycat in `demo/`,
-so you can run all three tools end to end before you point anything at a real
-tab, and before you ask your TD for an account:
-
-```
 python3 -m pip install requests
-python3 demo/verify.py --quick
+
+python3 run.py check      # have I got what I need?
+python3 run.py demo       # try all three tools on a tournament that does not exist
+python3 run.py setup      # point it at yours — asks three things
 ```
 
-That runs every tool against three deliberately different invented
-tournaments — a four-team nine-round event with two break categories, a two-team
-five-round one, and a small one whose break has not been announced yet — and
-reports what each tool read off the config rather than being told.
+Then:
+
+```
+python3 run.py testers    # who has been watched, and who still needs to be
+python3 run.py fold       # the public page, built and opened for you to check
+python3 run.py feedback   # consolidated judge feedback, with a stop for you to read it
+```
+
+**Do the demo first.** There is a fake Tabbycat built in, so all three tools run
+before you have a tab address, a token, or permission from anyone. If that
+works, any later problem is about your tournament rather than your laptop.
+
+**Or let an AI tool do it.** One paste block, works with Claude Code, Cowork,
+Codex, Cursor, Gemini CLI and the rest —
+[automation/ANY-AI-TOOL.md](automation/ANY-AI-TOOL.md). Claude Code users can
+clone, run `claude`, and type `/setup`.
 
 ## Nothing about your tournament is configured
 

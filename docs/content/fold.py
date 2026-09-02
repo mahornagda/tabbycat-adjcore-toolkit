@@ -10,8 +10,20 @@ PAGE = {
             "the rest of the tournament themselves.",
     "body": f"""
 <div class="btnrow">
-  <a class="btn" href="../samples/fold/">Open the sample</a>
+  <a class="btn" href="../samples/fold/">See it on a real tournament</a>
   <a class="btn ghost" href="../samples/fold/#sim">Go straight to the simulator</a>
+</div>
+
+<div class="note">
+  <p><b>That sample is a real tournament</b> — a 110-team intervarsity, with its
+  real teams, real break and real speaker tab. Not because we were careless with
+  somebody's data: because <em>everything this page can show was already public
+  on that tournament's own Tabbycat</em>, so the honest demo is the real thing.
+  If that claim is wrong the whole tool is wrong, and you can check it — open the
+  <b>What's shown</b> tab on the sample and it lists, switch by switch, what the
+  tab has released and what it has not.</p>
+  <p>The other two tools' samples are invented, because those two publish things
+  no tab makes public.</p>
 </div>
 
 <h2>The problem it solves</h2>
@@ -85,6 +97,71 @@ look broken:</p>
 <p>Which means everything past the first break round is genuinely knowable in
 shape and genuinely unknowable in occupants — so the shape is drawn and the
 rooms stay empty until the round before has been debated.</p>
+
+<h2 id="speaks">The speaker tab</h2>
+
+<p>Once a tournament releases its speaker tab, the fold shows it — and only
+then. The tab appears in the navigation when Tabbycat's own
+<code>speaker_tab_released</code> switch is on, and disappears again if it is
+turned off.</p>
+
+{figure("fold-speaks.png",
+        caption="The speaker tab, on a tournament that has released it. Every "
+                "number comes from the tab's own speaker tab; nothing is "
+                "recomputed.",
+        pins=[
+    Pin(0.10, 0.20, "It says how far the tab goes",
+        "Tabbycat lets a tournament publish only the top N. Where that is set, "
+        "the list stops there and the page says so rather than looking "
+        "truncated by accident.", to=(0.14, 0.245)),
+    Pin(0.60, 0.20, "Anonymous speakers keep their scores",
+        "A speaker the tab marks anonymous is shown without a name. The ranks "
+        "stay continuous and nothing is invented.", to=(0.62, 0.245)),
+    Pin(0.87, 0.20, "Iron-person speeches are counted out",
+        "Tabbycat excludes them from the average, so this does too — and marks "
+        "them, so a short speech count has a visible reason.", to=(0.83, 0.245)),
+    Pin(0.20, 0.47, "Round by round, per speaker",
+        "Each speech, in round order, with an asterisk on the ones that do not "
+        "count toward the average.", to=(0.72, 0.47)),
+])}
+
+<div class="note warn">
+  <p><b>Three of Tabbycat's rules here are obeyed, not reimplemented</b>, because
+  each is a decision the tournament made and not ours to second-guess: the
+  <code>anonymous</code> flag on a speaker, the tab limit, and the exclusion of
+  iron-person speeches from an average.</p>
+  <p>And three things are <em>not</em> published even when the speaker tab is:
+  <b>reply speeches</b>, the <b>adjudicator tab</b>, and any <b>ballot or
+  margin</b>. The first two have their own release switches in Tabbycat, and
+  releasing the speaker tab does not release them — conflating those would
+  publish something a tournament deliberately held back.</p>
+</div>
+
+<div class="tech">
+  <h3>What this cost, and what replaced it</h3>
+  <p>The gate's sharpest check used to be <b>no float anywhere in the
+  payload</b>. Speaks and feedback averages are floats in Tabbycat while points
+  and counts are integers, so any float at all was evidence that something
+  score-shaped had got in — whatever it was named, and wherever it came from.
+  That is a much stronger check than trying to enumerate the fields you do not
+  want.</p>
+  <p>Publishing a released speaker tab means floats are now legitimate. So the
+  check was narrowed rather than deleted: no float outside
+  <code>speaker_scores[].total|avg|stdev</code>,
+  <code>speaker_scores[].by_round[][].score</code> and
+  <code>standings[].speaks</code>. Everywhere else the tell still works.</p>
+  <p>Two more checks were added alongside it, because a switch that is off has
+  to be provable: when <code>speaker_tab_released</code> is off there must be no
+  <code>speaker_scores</code> key at all — not an empty one, absent — and when
+  it is on, no row marked anonymous may carry a name, and no rank may exceed the
+  published limit. The demo tournaments cover both states, and the one whose tab
+  is closed exists specifically so the off-path is tested rather than
+  assumed.</p>
+  <p>The pull is careful in one more way. A Tabbycat speaker record carries an
+  email, a phone number, a barcode and a <code>url_key</code> — which <em>is</em>
+  that person's private ballot URL. So the pull takes the name, the team and the
+  anonymous flag, and leaves the rest in the response object it never stores.</p>
+</div>
 
 <h2>The simulator</h2>
 
@@ -200,6 +277,13 @@ to you than a claim that nothing goes wrong.</p>
   <p>Now the ballots decide, not the flag — and per room, because ballots land
   one room at a time. A decided room shows its result while its neighbours stay
   pickable.</p>
+</div>
+
+<div class="note">
+  <p><b>On the sample, “Round by round” is empty, and that is the tool working.</b>
+  That tournament has finished and has since switched its public draw off, so
+  there are no rooms or panels to show. The fold does not cache what a tab used
+  to allow.</p>
 </div>
 
 <h2>Publishing it</h2>

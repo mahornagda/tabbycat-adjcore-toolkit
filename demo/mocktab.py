@@ -245,6 +245,15 @@ class Handler(BaseHTTPRequestHandler):
             "feedback": lambda: t.feedback,
             "feedback-questions": lambda: t.fq,
             "teams/standings/rounds": lambda: self._standings(t),
+            # The released tabs. Served with the same PII a real speaker record
+            # carries — email, url_key — precisely so the toolkit's own rule
+            # ("take the name and nothing else") is exercised here rather than
+            # trusted.
+            "speakers": lambda: t.all_speakers(),
+            "speakers/standings": lambda: t.speaker_standings(),
+            "speakers/standings/rounds": lambda: t.speaker_rounds(),
+            "teams/standings": lambda: t.team_standings(),
+            "speakers/standings/replies": lambda: [],
         }
         if rest in simple:
             page, nxt = _paged(self, simple[rest](), query)
@@ -303,8 +312,21 @@ class Handler(BaseHTTPRequestHandler):
 
     # ------------------------------------------------------------ sub-payloads --
     def _prefs(self, t):
-        p = dict(t.sh["public"])
-        p.update({
+        # Defaults first, then the shape's own values on top. The other way
+        # round — which is how this was first written — silently overrode a
+        # shape that had deliberately switched a release OFF, so the "not
+        # released" path was never actually tested.
+        p = {
+            # Release switches. Defaults are the interesting case: the speaker
+            # and team tabs out, replies and the adjudicator tab still held
+            # back — which is what a tournament looks like the day after it
+            # ends, and the state that must not leak the two closed ones.
+            "tab_release__speaker_tab_released": True,
+            "tab_release__team_tab_released": True,
+            "tab_release__replies_tab_released": False,
+            "tab_release__adjudicators_tab_released": False,
+            "tab_release__speaker_tab_limit": 0,
+            "tab_release__team_tab_limit": 0,
             "debate_rules__teams_in_debate": t.tpd,
             "debate_rules__substantive_speakers": int(t.sh["speakers_per_team"]),
             "debate_rules__side_names": t.sh["side_names"],
@@ -315,7 +337,8 @@ class Handler(BaseHTTPRequestHandler):
             "public_features__tournament_staff":
                 "<p>Convenors and the adjudication core are listed on the "
                 "tournament's own page.</p>",
-        })
+        }
+        p.update(t.sh["public"])
         return p
 
     def _motions(self, t):
