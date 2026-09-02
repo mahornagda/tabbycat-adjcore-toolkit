@@ -246,18 +246,43 @@ with sync_playwright() as pw:
         # break-round result that round locks, and its slots open a team sheet instead
         # — whose scrim then swallows every later click, which is what a bare .first
         # used to walk into.
-        r1 = pg.locator("#v-sim .room.sim:not(.settled) .slot.pick:not(.fixed)").first
-        room = pg.locator("#v-sim .room.sim").filter(has=pg.locator(".slot.pick:not(.fixed)")).first
-        before = pg.locator("#v-sim .slot.through").count()
-        room.locator(".slot.pick:not(.fixed)").nth(0).click()
-        room.locator(".slot.pick:not(.fixed)").nth(2).click()
-        pg.wait_for_timeout(200)
-        check(pg.locator("#v-sim .slot.through").count() == before + 2,
-              "clicking two teams sends them through")
-        room.locator(".slot.pick:not(.fixed)").nth(1).click()
-        pg.wait_for_timeout(200)
-        check(room.locator(".slot.through").count() == 2,
-              "a third pick in one room replaces the oldest rather than overfilling it")
+        # Two things here used to be format assumptions dressed up as a test.
+        #
+        # (1) There may be nothing left to pick. If tab has published a result
+        #     for every round that has been drawn, every room is locked to what
+        #     actually happened — a real state, not a fault. Waiting for a
+        #     pickable slot then hangs for the full timeout.
+        # (2) How many teams go through a room is the format's business. Half of
+        #     them advance: two of four in a British Parliamentary room, one of
+        #     two elsewhere. Clicking slots 0, 2 and 1 only makes sense in a room
+        #     with four seats.
+        pickable = pg.locator("#v-sim .room.sim .slot.pick:not(.fixed)")
+        if pickable.count() == 0:
+            skip("clicking teams sends them through (every drawn round is "
+                 "already decided, so there is nothing left to pick)")
+            skip("a third pick replaces the oldest")
+        else:
+            room = pg.locator("#v-sim .room.sim").filter(
+                has=pg.locator(".slot.pick:not(.fixed)")).first
+            seats = room.locator(".slot").count()
+            through = max(1, seats // 2)
+            before = pg.locator("#v-sim .slot.through").count()
+            for i in range(through):
+                room.locator(".slot.pick:not(.fixed)").nth(i).click()
+                pg.wait_for_timeout(120)
+            check(pg.locator("#v-sim .slot.through").count() == before + through,
+                  f"clicking {through} of {seats} teams sends them through")
+            if seats > 2:
+                # One more than the room allows: the oldest pick should drop out
+                # rather than the room overfilling.
+                room.locator(".slot.pick:not(.fixed)").last.click()
+                pg.wait_for_timeout(200)
+                check(room.locator(".slot.through").count() == through,
+                      "a pick beyond the room's capacity replaces the oldest "
+                      "rather than overfilling it")
+            else:
+                skip("a pick beyond capacity replaces the oldest (a two-team "
+                     "room advances one, so there is no queue to displace)")
         pg.locator('#v-sim .ghost:has-text("Chalk")').click()
         pg.wait_for_timeout(400)
         champ = pg.locator("#v-sim .champ .who")
@@ -272,6 +297,7 @@ with sync_playwright() as pw:
         pg.locator('#v-sim .ghost:has-text("Share")').click()
         pg.wait_for_timeout(200)
         code = pg.evaluate("location.hash")
+        restored_target = pg.locator("#v-sim .slot.through").count()
         check(code.startswith("#sim="), f"share puts the picks in the link ({len(code)} chars)")
         pg.locator('#v-sim .ghost:has-text("Clear")').click()
         pg.wait_for_timeout(200)
@@ -279,7 +305,15 @@ with sync_playwright() as pw:
               "clear empties the reader's picks (a published result stays, correctly)")
         pg.evaluate(f"location.hash = '{code}'")
         pg.wait_for_timeout(400)
-        check(pg.locator("#v-sim .slot.through").count() > 10, "pasting a shared link restores the picks")
+        # Compare against what was on the page before Clear, rather than a
+        # number taken from one tournament. And if nothing was pickable there is
+        # nothing to restore, which is a state rather than a failure.
+        if restored_target == 0:
+            skip("pasting a shared link restores the picks (nothing was "
+                 "pickable, so there was nothing to share)")
+        else:
+            check(pg.locator("#v-sim .slot.through").count() == restored_target,
+                  f"pasting a shared link restores the picks ({restored_target})")
         check(pg.locator("#v-sim .champ .who").count() == 1, "and its champion")
 
         # The bracket is FIXED at the break. Stated as the invariant rather than as a
@@ -323,7 +357,9 @@ with sync_playwright() as pw:
     pg.wait_for_selector("#roomgrid .room")
     grid = pg.locator("#roomgrid .room").count()
     check(grid >= 1, f"the draw grid renders ({grid} rooms)")
-    check(pg.locator("#roomgrid .slot").count() >= grid * 4, "every room lists its teams")
+    seats = pg.evaluate("(DATA.tournament || {}).teams_per_debate || 4")
+    check(pg.locator("#roomgrid .slot").count() >= grid * seats,
+          f"every room lists its teams ({grid} rooms x {seats} seats)")
     check(pg.locator("#roomgrid .jchip").count() >= grid, "panels are shown")
     total = pg.locator("#roomgrid .room").count()
     pg.locator('#v-rounds input[type=search]').fill("Riverbend A")
@@ -339,8 +375,12 @@ with sync_playwright() as pw:
     want = {
         "teams": pg.evaluate("(DATA.teams || []).length"),
         "judges": pg.evaluate("(DATA.judges || []).length"),
+        # The schools view groups BOTH teams and judges by institution, so a
+        # count taken from teams alone is right only when every school that sent
+        # a judge also sent a team.
         "schools": pg.evaluate(
-            "new Set((DATA.teams || []).map(t => t.inst).filter(Boolean)).size"),
+            "new Set([...(DATA.teams || []), ...(DATA.judges || [])]"
+            ".map(x => x.inst).filter(Boolean)).size"),
     }
     for tab in ("teams", "judges", "schools"):
         pg.locator("#tab-" + tab).click()

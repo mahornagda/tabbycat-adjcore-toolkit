@@ -19,9 +19,18 @@ const SIM_KEY = "fold-sim-v1";
 
 function simRounds(slug) { return ELIMS.filter(r => r.cat === slug); }
 
-/** How many of a room's teams go through — one, in the final. */
+/**
+ * How many of a room's teams go through — half of them, and one in the final.
+ *
+ * This was `2`, which is the answer for a four-team room and wrong everywhere
+ * else. At a two-team tournament exactly one team advances, so wanting two made
+ * every settled semifinal look unsettled and left the grand final permanently
+ * "waiting on" rooms whose results were already in.
+ */
 function advPerRoom(slug, k) {
-  return k === simRounds(slug).length - 1 ? 1 : 2;
+  const perRoom = (DATA.tournament && DATA.tournament.teams_per_debate) || 4;
+  if (k === simRounds(slug).length - 1) return 1;
+  return Math.max(1, Math.floor(perRoom / 2));
 }
 
 /**
