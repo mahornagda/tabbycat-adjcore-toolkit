@@ -1,0 +1,95 @@
+#!/bin/bash
+# refresh — build the feedback site, check it, publish it.
+#
+#   ./refresh --dry     build and check, stop before publishing
+#   ./refresh           build, check, publish
+#
+# It refuses to publish a build that fails the gate, so a mistake in an edited
+# summary or in the emitter cannot reach the internet. Unlike the public Fold
+# site there is no launchd job and there never should be: this page is written
+# once, read by the CAP, and then sent out.
+set -uo pipefail
+cd "$(dirname "$0")"
+
+PY=$(command -v python3)
+LOG=refresh.log
+NODEBIN=$HOME/.local/node-v22.12.0-darwin-arm64/bin
+export PATH="$NODEBIN:$PATH"
+
+# Where this publishes, and what the site is called. Both come from
+# tournament.json so nothing about your tournament is written into this script:
+#
+#   "publish": { "host": "cloudflare", "feedback_project": "my-tournament-judge-feedback" }
+#
+# Override either for a single run:  HOST=surge PROJECT=other-name ./refresh
+read_cfg() { "$PY" - "$1" <<'CFG'
+import json, os, sys
+key = sys.argv[1]
+root = os.path.dirname(os.path.abspath(os.path.join(os.getcwd(), "..")))
+for path in (os.path.join(os.getcwd(), "..", "tournament.json"),
+             os.path.join(os.getcwd(), "tournament.json")):
+    if os.path.exists(path):
+        try:
+            print((json.load(open(path)).get("publish") or {}).get(key) or "")
+        except Exception:
+            print("")
+        break
+else:
+    print("")
+CFG
+}
+
+TARGET=${HOST:-${TARGET:-$(read_cfg host)}}
+TARGET=${TARGET:-cloudflare}
+CF_PROJECT=${PROJECT:-$(read_cfg feedback_project)}
+SURGE_DOMAIN=${SURGE_DOMAIN:-${CF_PROJECT}.surge.sh}
+
+if [ -z "$CF_PROJECT" ]; then
+  echo "No site name set. Add this to tournament.json and run again:"
+  echo '  "publish": { "host": "cloudflare", "feedback_project": "my-tournament-judge-feedback" }'
+  exit 1
+fi
+
+say() { printf '%s  %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" | tee -a "$LOG"; }
+
+case "${1:-}" in --dry) DEPLOY=0 ;; *) DEPLOY=1 ;; esac
+
+say "build starting"
+if ! "$PY" build.py 2>&1 | tee -a "$LOG"; then
+  say "BUILD FAILED — nothing published"
+  exit 1
+fi
+
+# The gate is the deploy gate. A failure means a page could be carrying a name,
+# a score or a round, so we stop rather than publish and apologise afterwards.
+if ! "$PY" tests/test_gate.py 2>&1 | tee -a "$LOG"; then
+  say "GATE CHECKS FAILED — nothing published"
+  exit 1
+fi
+
+if [ "$DEPLOY" != "1" ]; then
+  say "checked and ready in dist/ — not published (--dry)"
+  exit 0
+fi
+
+deploy_cloudflare() {
+  npx --yes wrangler@latest pages deploy dist \
+    --project-name "$CF_PROJECT" --branch main --commit-dirty=true 2>&1
+}
+deploy_surge() { npx --yes surge --project dist --domain "$SURGE_DOMAIN" 2>&1; }
+
+for attempt in 1 2 3; do
+  if out=$("deploy_${TARGET}"); then
+    # Cloudflare echoes a per-deploy alias as well as the production hostname.
+    # Report the one people will be handed.
+    url="https://${CF_PROJECT}.pages.dev"
+    [ "$TARGET" = "surge" ] && url="https://${SURGE_DOMAIN}"
+    say "published $url"
+    exit 0
+  fi
+  printf '%s\n' "$out" >>"$LOG"
+  say "deploy attempt $attempt to $TARGET failed — retrying in 20s"
+  sleep 20
+done
+say "DEPLOY FAILED after 3 attempts. tail $LOG"
+exit 1

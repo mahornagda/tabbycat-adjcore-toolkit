@@ -1,0 +1,169 @@
+#!/bin/bash
+# refresh — pull the tab, rebuild the public page, check it, publish it.
+#
+# The only command anyone needs. Safe to run as often as you like: it is
+# read-only against Tabbycat, and it refuses to publish a build that fails the
+# gate checks, so a mistake in the emitter cannot reach the internet.
+#
+#   ./refresh            pull, check, deploy
+#   ./refresh --dry      pull, check, stop before deploying
+#   ./refresh --offline   rebuild from the last pull, check, stop
+#
+set -uo pipefail
+cd "$(dirname "$0")"
+
+PY=$(command -v python3)
+LOG=refresh.log
+
+# Where it publishes. One word, and it is the only thing that changes when a host
+# stops working — which is exactly what happened on 27 Aug, when Netlify's free
+# account hit "Account credit usage exceeded" and refused every deploy.
+#   cloudflare  wrangler pages deploy      (reads dist/_headers, unmetered bandwidth)
+#   surge       surge --project dist       (no headers; the page carries its own CSP)
+#   netlify     netlify deploy --prod      (kept so it can be switched back)
+# Override for one run with:  TARGET=surge ./refresh
+
+NODEBIN=$HOME/.local/node-v22.12.0-darwin-arm64/bin
+export PATH="$NODEBIN:$PATH"
+NETLIFY=${NETLIFY:-$NODEBIN/netlify}
+NETLIFY_TOKEN=$(python3 - <<'TOK'
+import json, os
+p = os.path.expanduser("~/Library/Preferences/netlify/config.json")
+try:
+    d = json.load(open(p))
+    print(next(t for t in (((v.get("auth") or {}).get("token"))
+              for v in (d.get("users") or {}).values()) if t))
+except Exception:
+    print("")
+TOK
+)
+# Where this publishes, and what the site is called. Both come from
+# tournament.json so nothing about your tournament is written into this script:
+#
+#   "publish": { "host": "cloudflare", "fold_project": "my-tournament-the-fold" }
+#
+# Override either for a single run:  HOST=surge PROJECT=other-name ./refresh
+read_cfg() { "$PY" - "$1" <<'CFG'
+import json, os, sys
+key = sys.argv[1]
+root = os.path.dirname(os.path.abspath(os.path.join(os.getcwd(), "..")))
+for path in (os.path.join(os.getcwd(), "..", "tournament.json"),
+             os.path.join(os.getcwd(), "tournament.json")):
+    if os.path.exists(path):
+        try:
+            print((json.load(open(path)).get("publish") or {}).get(key) or "")
+        except Exception:
+            print("")
+        break
+else:
+    print("")
+CFG
+}
+
+TARGET=${HOST:-${TARGET:-$(read_cfg host)}}
+TARGET=${TARGET:-cloudflare}
+CF_PROJECT=${PROJECT:-$(read_cfg fold_project)}
+SURGE_DOMAIN=${SURGE_DOMAIN:-${CF_PROJECT}.surge.sh}
+
+if [ -z "$CF_PROJECT" ]; then
+  echo "No site name set. Add this to tournament.json and run again:"
+  echo '  "publish": { "host": "cloudflare", "fold_project": "my-tournament-the-fold" }'
+  exit 1
+fi
+
+say() { printf '%s  %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" | tee -a "$LOG"; }
+
+set -a; . ../.env; set +a
+
+# Only one refresh at a time. The launchd job fires every 5 minutes, so a manual
+# run can land on top of it — and two deploys of the same project at once come
+# back "Forbidden" from Netlify, which reads as a permissions problem and is not.
+# mkdir is atomic, which is the whole reason it is the lock.
+LOCK=.refresh.lock
+if ! mkdir "$LOCK" 2>/dev/null; then
+  if [ -n "$(find "$LOCK" -maxdepth 0 -mmin +10 2>/dev/null)" ]; then
+    say "clearing a stale lock (older than 10 minutes)"
+    rm -rf "$LOCK"; mkdir "$LOCK" || exit 1
+  else
+    say "another refresh is running — leaving it to finish"
+    exit 0
+  fi
+fi
+trap 'rm -rf "$LOCK"' EXIT INT TERM
+
+# bash 3.2 ships on macOS and cannot expand an empty array under `set -u`,
+# so the build flag is a plain string.
+case "${1:-}" in
+  --offline) BUILD="--offline"; DEPLOY=0 ;;
+  --dry)     BUILD="";          DEPLOY=0 ;;
+  *)         BUILD="";          DEPLOY=1 ;;
+esac
+
+say "build starting ${BUILD:-live}"
+if ! "$PY" build.py $BUILD >>"$LOG" 2>&1; then
+  say "BUILD FAILED — nothing published. tail $LOG"
+  exit 1
+fi
+
+# The gate checks are the deploy gate. A failure here means the page could be
+# carrying something it should not, so we stop rather than publish and fix later.
+if ! "$PY" tests/test_gate.py >>"$LOG" 2>&1; then
+  say "GATE CHECKS FAILED — nothing published. tail $LOG"
+  exit 1
+fi
+say "built and checked: $(du -h dist/index.html | cut -f1)"
+
+# One function per host. Each prints the live URL on success and returns non-zero
+# on failure; `why_blocked` gets the real reason out of a host that only says
+# "Forbidden", so a permanently blocked account stops retrying instead of burning
+# a minute out of every five-minute cycle.
+deploy_netlify() { "$NETLIFY" deploy --prod --dir dist 2>&1; }
+deploy_cloudflare() {
+  npx --yes wrangler@latest pages deploy dist \
+    --project-name "$CF_PROJECT" --branch main --commit-dirty=true 2>&1
+}
+deploy_surge() { npx --yes surge --project dist --domain "$SURGE_DOMAIN" 2>&1; }
+
+why_blocked() {
+  [ "$TARGET" = "netlify" ] || return 1
+  curl -s -X POST "https://api.netlify.com/api/v1/sites/${SITE_ID}/deploys" \
+    -H "Authorization: Bearer ${NETLIFY_TOKEN}" -H "Content-Type: application/json" \
+    -d '{"files":{}}' 2>/dev/null | sed -n 's/.*"error":"\([^"]*\)".*/\1/p'
+}
+
+if [ "$DEPLOY" = "1" ]; then
+  published=0
+  for attempt in 1 2 3; do
+    if out=$("deploy_${TARGET}"); then
+      # Cloudflare prints a per-deploy alias (873823f4.<project>.pages.dev) as
+      # well as the production hostname. Report the one people bookmark: prefer a
+      # host with no deploy-hash label in front of the project name.
+      urls=$(printf '%s' "$out" | grep -oE 'https://[a-zA-Z0-9._-]+\.(netlify\.app|pages\.dev|surge\.sh)')
+      url=$(printf '%s' "$urls" | grep -vE '://[a-f0-9]{6,}\.' | tail -1)
+      url=${url:-$(printf '%s' "$urls" | tail -1)}
+      # Cloudflare echoes the per-deploy alias (873823f4.<project>.pages.dev),
+      # which is a real URL but not the one anybody has bookmarked. Report the
+      # production hostname the audience actually opens.
+      [ "$TARGET" = "cloudflare" ] && url="https://${CF_PROJECT}.pages.dev"
+      say "published ${url:-to $TARGET}"
+      published=1
+      break
+    fi
+    printf '%s\n' "$out" >>"$LOG"
+    why=$(why_blocked)
+    case "$why" in
+      *credit*|*quota*|*limit*|*blocked*)
+        say "DEPLOY BLOCKED BY ${TARGET}: ${why}"
+        say "  the build in dist/ is good and checked — it publishes the moment this clears"
+        say "  switch host with: echo cloudflare > .deploy-target"
+        exit 2 ;;
+    esac
+    say "deploy attempt $attempt to $TARGET failed${why:+ — $why} — retrying in 20s"
+    sleep 20
+  done
+  if [ "$published" != "1" ]; then
+    say "DEPLOY FAILED after 3 attempts — the live page still shows the previous build. tail $LOG"
+    exit 1
+  fi
+fi
+say "done"

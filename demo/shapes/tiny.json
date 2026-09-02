@@ -1,0 +1,26 @@
+{
+  "name": "Kestrel Bay Novice Cup 2027",
+  "short": "Kestrel",
+  "slug": "demo3",
+  "seed": 5,
+  "teams_in_debate": 4,
+  "speakers_per_team": 2,
+  "side_names": "gov-opp",
+  "prelims": 4,
+  "teams": 16,
+  "judges": 10,
+  "adjcore": 3,
+  "institutions": 8,
+  "panel_size": 2,
+  "break_categories": [
+    {"name": "Open", "slug": "open", "size": 4, "general": true}
+  ],
+  "rounds_completed": 3,
+  "silent_rounds": [],
+  "break_announced": false,
+  "elim_progress": {},
+  "feedback_per_debate": 0.5,
+  "public": {"public_features__public_draw": "current",
+             "public_features__public_breaking_teams": false,
+             "tab_release__team_tab_released": false}
+}

@@ -1,0 +1,1042 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Adjcore</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%231F4E5F'/%3E%3Ctext x='16' y='22' font-size='16' font-family='Helvetica,Arial' font-weight='bold' text-anchor='middle' fill='white'%3EAC%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#FFFFFF; --panel:#FFFFFF; --sunk:#F4F6F7; --deep:#ECEFF1;
+  --ink:#0F1315; --ink2:#454E52; --ink3:#79848A;
+  --line:#E0E4E7; --line2:#C6CDD1; --line3:#9AA4AA;
+  --accent:#1F4E5F; --accent-bg:#EDF3F5;
+  --ok:#2F6B4F; --ok-bg:#EAF2ED;
+  --warn:#8A6516; --warn-bg:#F7F1E4;
+  --stop:#96342C; --stop-bg:#F8EDEC;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0C0E10; --panel:#131719; --sunk:#181D20; --deep:#1E2427;
+  --ink:#E6EAEC; --ink2:#A8B2B7; --ink3:#727D83;
+  --line:#222A2E; --line2:#333D42; --line3:#4A565C;
+  --accent:#7FB6C7; --accent-bg:#14262C;
+  --ok:#79B694; --ok-bg:#152219;
+  --warn:#C9A465; --warn-bg:#241D0F;
+  --stop:#D08880; --stop-bg:#251311;
+}}
+:root[data-theme="dark"]{
+  --ground:#0C0E10; --panel:#131719; --sunk:#181D20; --deep:#1E2427;
+  --ink:#E6EAEC; --ink2:#A8B2B7; --ink3:#727D83;
+  --line:#222A2E; --line2:#333D42; --line3:#4A565C;
+  --accent:#7FB6C7; --accent-bg:#14262C;
+  --ok:#79B694; --ok-bg:#152219;
+  --warn:#C9A465; --warn-bg:#241D0F;
+  --stop:#D08880; --stop-bg:#251311;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--ground);color:var(--ink);
+  font-family:"Inter Tight",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;
+  font-feature-settings:"tnum" 0}
+h1,h2,h3,h4{margin:0;font-weight:600;letter-spacing:-.011em}
+button{font:inherit;border-radius:2px}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+
+/* ---------- chrome ---------- */
+header{position:sticky;top:0;z-index:40;background:var(--panel);border-bottom:1px solid var(--line2)}
+.hrow{max-width:1520px;margin:0 auto;padding:0 16px;height:52px;display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0}
+.brand h1{font-size:15px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.brand .meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spacer{flex:1}
+.stamp{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink3);white-space:nowrap}
+button.primary{background:var(--accent);color:var(--panel);border:1px solid var(--accent);
+  padding:6px 13px;font-weight:600;font-size:12.5px;cursor:pointer;letter-spacing:.005em}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{color:#0C0E10}}
+:root[data-theme="dark"] button.primary{color:#0C0E10}
+button.primary:hover:not(:disabled){filter:brightness(1.12)}
+button.primary:disabled{opacity:.45;cursor:wait}
+button.ghost{background:var(--panel);color:var(--ink2);border:1px solid var(--line2);
+  padding:5px 11px;font-size:12.5px;cursor:pointer}
+button.ghost:hover{border-color:var(--line3);color:var(--ink)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+nav.tabs{background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:52px;z-index:39}
+nav.tabs .inner{max-width:1520px;margin:0 auto;padding:0 16px;display:flex;overflow-x:auto}
+nav.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:9px 14px;
+  cursor:pointer;color:var(--ink3);font-weight:500;font-size:13px;white-space:nowrap;border-radius:0}
+nav.tabs button:hover{color:var(--ink)}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+
+main{max-width:1520px;margin:0 auto;padding:18px 16px 70px}
+section[hidden]{display:none}
+
+/* ---------- structure ---------- */
+.head{border-bottom:1px solid var(--line2);padding-bottom:9px;margin:0 0 14px}
+.head h2{font-size:16px;font-weight:600}
+.head p{margin:3px 0 0;color:var(--ink2);font-size:12.5px;max-width:96ch}
+.head:not(:first-child){margin-top:26px}
+.grid{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:16px}
+.g4{grid-template-columns:repeat(auto-fit,minmax(178px,1fr))}
+.stat{background:var(--panel);padding:11px 13px}
+.stat b{display:block;font-family:"IBM Plex Mono",monospace;font-size:24px;font-weight:500;
+  line-height:1.15;letter-spacing:-.02em}
+.stat .lab{font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.055em;margin-top:2px}
+.stat .sub{font-size:11.5px;color:var(--ink2);margin-top:4px}
+.stat.ok b{color:var(--ok)} .stat.warn b{color:var(--warn)} .stat.stop b{color:var(--stop)}
+.box{border:1px solid var(--line);background:var(--panel);margin-bottom:14px}
+.box .bh{padding:9px 13px;border-bottom:1px solid var(--line);display:flex;
+  justify-content:space-between;align-items:baseline;gap:10px;background:var(--sunk)}
+.box .bh h3{font-size:13px;font-weight:600}
+.box .bh .sub{font-size:11.5px;color:var(--ink3)}
+.box .bb{padding:12px 13px}
+
+/* ---------- tags ---------- */
+.tag{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:500;
+  padding:1px 5px;border:1px solid;border-radius:2px;letter-spacing:.03em;
+  text-transform:uppercase;white-space:nowrap;line-height:1.5}
+.t-ok{color:var(--ok);border-color:var(--ok);background:var(--ok-bg)}
+.t-warn{color:var(--warn);border-color:var(--warn);background:var(--warn-bg)}
+.t-stop{color:var(--stop);border-color:var(--stop);background:var(--stop-bg)}
+.t-acc{color:var(--accent);border-color:var(--accent);background:var(--accent-bg)}
+.t-mute{color:var(--ink3);border-color:var(--line2);background:var(--sunk)}
+.dot{display:inline-block;width:6px;height:6px;margin-right:5px;vertical-align:1px}
+.d-ok{background:var(--ok)} .d-warn{background:var(--warn)}
+.d-stop{background:var(--stop)} .d-mute{background:var(--line3)}
+
+/* ---------- tables ---------- */
+.tw{overflow-x:auto;border:1px solid var(--line);background:var(--panel);margin-bottom:14px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th{position:sticky;top:0;background:var(--sunk);text-align:left;padding:7px 11px;
+  font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);
+  border-bottom:1px solid var(--line2);font-weight:600;white-space:nowrap;z-index:2}
+td{padding:6px 11px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--sunk)}
+td.num,th.num{text-align:right;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+td.nm{font-weight:500}
+.sub{color:var(--ink3)}
+.clickrow{cursor:pointer}
+th[data-k]{cursor:pointer;user-select:none}
+th[data-k]:hover{color:var(--ink)}
+
+/* ---------- controls ---------- */
+.bar{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:11px}
+input[type=search],input[type=text],input[type=password],select{background:var(--panel);color:var(--ink);
+  border:1px solid var(--line2);border-radius:2px;padding:6px 9px;font-size:13px;min-width:0;font-family:inherit}
+input[type=search]{flex:1;min-width:190px}
+label.chk{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink2);
+  cursor:pointer;user-select:none;border:1px solid var(--line2);padding:5px 9px;background:var(--panel)}
+
+/* ---------- notes ---------- */
+.note{border:1px solid var(--line);border-left:3px solid var(--line3);background:var(--panel);
+  padding:9px 13px;margin-bottom:9px;font-size:12.5px;color:var(--ink2)}
+.note b{display:block;color:var(--ink);font-size:13px;font-weight:600;margin-bottom:2px}
+.note.w{border-left-color:var(--warn)} .note.s{border-left-color:var(--stop)}
+.note.g{border-left-color:var(--ok)} .note.a{border-left-color:var(--accent)}
+.empty{padding:26px 14px;text-align:center;color:var(--ink3);font-size:13px;
+  border:1px dashed var(--line2);background:var(--panel);margin-bottom:14px}
+
+/* ---------- coverage grid ---------- */
+.cov{overflow:auto;max-height:74vh;border:1px solid var(--line);background:var(--panel);margin-bottom:8px}
+.cov table{font-size:11.5px}
+.cov th.r{text-align:center;min-width:40px;padding:7px 4px}
+.cov td.c{text-align:center;padding:3px 3px}
+.cell{display:inline-block;width:22px;height:18px;line-height:17px;font-size:10px;font-weight:600;
+  font-family:"IBM Plex Mono",monospace;border:1px solid transparent}
+.cell.C{background:var(--ok-bg);color:var(--ok);border-color:var(--ok)}
+.cell.P{background:var(--accent-bg);color:var(--accent);border-color:var(--accent)}
+.cell.T{background:var(--warn-bg);color:var(--warn);border-color:var(--warn)}
+.cell.sat{background:var(--sunk);color:var(--ink3);border-color:var(--line)}
+.cell.none{color:var(--line2)}
+.cov td.c .cell{position:relative;cursor:pointer}
+.cov td.c .cell:hover{outline:1px solid var(--line3);outline-offset:1px}
+.cell.hasnote{position:relative}
+.ncell{display:inline-block;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  vertical-align:middle;font-size:11.5px;line-height:1.5;padding:2px 7px;cursor:pointer;
+  border:1px dashed var(--line2);background:transparent;color:var(--ink3)}
+.ncell:hover{border-color:var(--line3);color:var(--ink)}
+.ncell.hasnote{border-style:solid;border-color:var(--accent);background:var(--accent-bg);color:var(--ink2)}
+.dnote{border:1px solid var(--line);background:var(--panel);padding:9px 13px;margin-bottom:9px}
+.dnote b{display:block;color:var(--ink);font-size:13px;font-weight:600;margin-bottom:5px}
+.dnote .ncell{max-width:100%;white-space:normal;overflow:visible}
+.cell.hasnote::after{content:'';position:absolute;top:-1px;right:-1px;
+  border-top:5px solid var(--accent);border-left:5px solid transparent}
+
+/* ---------- cell comment bar ---------- */
+.cbar{position:fixed;z-index:70;width:280px;background:var(--panel);
+  border:1px solid var(--line3);box-shadow:0 8px 28px rgba(6,9,10,.30);padding:9px}
+.cbar .who{font-size:11.5px;color:var(--ink3);margin-bottom:6px;
+  font-family:"IBM Plex Mono",monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cbar textarea{width:100%;box-sizing:border-box;background:var(--sunk);color:var(--ink);
+  border:1px solid var(--line2);border-radius:2px;padding:6px 8px;
+  font:inherit;font-size:12.5px;line-height:1.45;resize:vertical;min-height:56px}
+.cbar .crow{display:flex;gap:6px;align-items:center;margin-top:7px}
+.cbar .chint{font-size:10.5px;color:var(--ink3);margin-left:auto;text-align:right;line-height:1.3}
+.cbar button{padding:4px 10px;font-size:12px}
+.namecell{position:sticky;left:0;background:var(--panel);z-index:1;border-right:1px solid var(--line2);
+  white-space:nowrap;max-width:230px;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+tbody tr:hover .namecell{background:var(--sunk)}
+.legend{display:flex;gap:13px;flex-wrap:wrap;font-size:11.5px;color:var(--ink3);margin-bottom:16px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+
+/* ---------- detail ---------- */
+.detail{position:fixed;inset:0;background:rgba(6,9,10,.55);z-index:60;display:flex;justify-content:flex-end}
+.detail[hidden]{display:none}
+.sheet{background:var(--ground);width:min(720px,100%);height:100%;overflow-y:auto;
+  border-left:1px solid var(--line2);padding:16px 18px 50px}
+.sheet .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;
+  border-bottom:1px solid var(--line2);padding-bottom:10px;margin-bottom:12px}
+.sheet h2{font-size:18px;font-weight:700}
+.sheet .who{color:var(--ink3);font-size:12.5px;margin-top:2px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:1px;
+  background:var(--line);border:1px solid var(--line);margin-bottom:13px}
+.facts div{background:var(--panel);padding:8px 10px}
+.facts b{display:block;font-family:"IBM Plex Mono",monospace;font-size:16px;font-weight:500}
+.facts span{font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
+.rows{border:1px solid var(--line);background:var(--panel);margin-bottom:13px}
+.row{padding:8px 12px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row b{font-size:12.5px;font-weight:600}
+.row .m{font-size:11.5px;color:var(--ink3);font-family:"IBM Plex Mono",monospace}
+.fbtable{width:100%;border-collapse:collapse;font-size:12.5px}
+.fbtable th{background:var(--sunk);font-size:10px;padding:6px 10px}
+.fbtable td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.fbtable tr:last-child td{border-bottom:0}
+.fbtable td.rnd{font-family:"IBM Plex Mono",monospace;font-weight:600;width:44px;white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.fbchip{display:inline-flex;align-items:baseline;gap:6px;border:1px solid var(--line2);
+  background:var(--panel);padding:3px 8px;border-radius:2px;font-size:11.5px;color:var(--ink2);
+  font-family:inherit;cursor:default;max-width:100%}
+.fbchip .sc{font-family:"IBM Plex Mono",monospace;font-weight:600;color:var(--ink);font-size:12.5px}
+.fbchip .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px}
+.fbchip.has{cursor:pointer;border-bottom:2px solid var(--accent)}
+.fbchip.has:hover{background:var(--accent-bg)}
+.fbchip.has[aria-expanded="true"]{background:var(--accent-bg);border-color:var(--accent)}
+.fbchip.ign{opacity:.5;text-decoration:line-through}
+.cmt{border-left:2px solid var(--accent);background:var(--sunk);padding:8px 11px;margin:7px 0 2px;font-size:12.5px}
+.cmt .src{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink3);
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.cmt .q{color:var(--ink3);font-size:11.5px;margin-top:6px}
+.cmt .a{color:var(--ink)}
+.fbsum{display:flex;gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:10px}
+.fbsum div{background:var(--panel);padding:7px 11px;flex:1}
+.fbsum b{display:block;font-family:"IBM Plex Mono",monospace;font-size:15px;font-weight:500}
+.fbsum span{font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
+.hint{font-size:11.5px;color:var(--ink3);margin:0 0 8px}
+h4.lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);
+  margin:16px 0 6px;font-weight:600}
+
+/* ---------- login ---------- */
+#gate{position:fixed;inset:0;background:var(--ground);z-index:90;display:flex;
+  align-items:center;justify-content:center;padding:20px}
+#gate[hidden]{display:none}
+.gbox{border:1px solid var(--line2);background:var(--panel);padding:26px;width:min(360px,100%)}
+.gbox h2{font-size:16px;margin-bottom:3px}
+.gbox p{font-size:12.5px;color:var(--ink3);margin:0 0 16px}
+.gbox input{width:100%;margin-bottom:9px;padding:8px 10px}
+.gbox button{width:100%;padding:8px}
+.gerr{color:var(--stop);font-size:12.5px;margin-top:8px;min-height:16px}
+
+footer{max-width:1520px;margin:0 auto;padding:12px 16px;color:var(--ink3);font-size:11.5px;
+  border-top:1px solid var(--line);font-family:"IBM Plex Mono",monospace}
+#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--ink);
+  color:var(--ground);padding:8px 16px;font-size:12.5px;z-index:99;border-radius:2px}
+#toast[hidden]{display:none}
+@media(max-width:640px){
+  main{padding:12px 10px 60px}.hrow{padding:0 10px}nav.tabs .inner{padding:0 10px}
+  .sheet{padding:14px 12px 44px}.brand .meta{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="gate" hidden>
+  <form class="gbox" id="gform">
+    <h2>Adjcore</h2>
+    <p id="gsub">Adjudication core only.</p>
+    <input type="password" id="gpass" placeholder="Passphrase" autocomplete="current-password" required>
+    <button class="primary" type="submit">Open</button>
+    <div class="gerr" id="gerr"></div>
+  </form>
+</div>
+
+<header>
+  <div class="hrow">
+    <div class="brand">
+      <h1 id="tname">Adjcore</h1>
+      <div class="meta" id="tsub">loading</div>
+    </div>
+    <div class="spacer"></div>
+    <span class="stamp" id="stamp"></span>
+    <button class="primary" id="btnRefresh">Refresh</button>
+  </div>
+</header>
+<nav class="tabs"><div class="inner" role="tablist">
+  <button role="tab" aria-selected="true"  data-tab="now">Right now</button>
+  <button role="tab" aria-selected="false" data-tab="testing">Testing</button>
+  <button role="tab" aria-selected="false" data-tab="judges">Judges</button>
+  <button role="tab" aria-selected="false" data-tab="outrounds">Outrounds</button>
+  <button role="tab" aria-selected="false" data-tab="feedback">Feedback</button>
+</div></nav>
+
+<main>
+  <section id="tab-now"></section>
+  <section id="tab-testing" hidden></section>
+  <section id="tab-judges" hidden></section>
+  <section id="tab-outrounds" hidden></section>
+  <section id="tab-feedback" hidden></section>
+</main>
+
+<div class="detail" id="detail" hidden><div class="sheet" id="sheet"></div></div>
+<div id="toast" hidden></div>
+<footer id="foot">Reads from Tabbycat. Never writes to it.</footer>
+
+<script>
+/* ============================ plumbing ============================ */
+const $=s=>document.querySelector(s);
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let D=null,STATE=null,API='/api',REFRESH='/api/refresh',CLOUD=false,TOKEN=localStorage.getItem('adjcore_token')||'';
+let sortBy={};
+
+function toast(m,ms=2600){const t=$('#toast');t.textContent=m;t.hidden=false;
+  clearTimeout(t._x);t._x=setTimeout(()=>t.hidden=true,ms);}
+function ago(iso){if(!iso)return'';const s=(Date.now()-new Date(iso))/1000;
+  if(s<90)return'just now';if(s<5400)return Math.round(s/60)+'m ago';
+  if(s<172800)return Math.round(s/3600)+'h ago';return Math.round(s/86400)+'d ago';}
+const H=()=>TOKEN?{'Authorization':'Bearer '+TOKEN}:{};
+
+async function detect(){
+  try{const r=await fetch('/api/status',{cache:'no-store'});
+      if(r.ok){API='/api';REFRESH='/api/refresh';CLOUD=false;return;}}catch(e){}
+  API='/.netlify/functions';REFRESH='/.netlify/functions/refresh-background';CLOUD=true;
+}
+
+/* ============================ auth ============================ */
+async function ensureAuth(){
+  if(!CLOUD) return true;
+  // Probe first — if the site is open there is no gate to show.
+  const r=await fetch(API+'/data?probe=1',{headers:H(),cache:'no-store'});
+  if(r.status!==401) return true;
+  TOKEN='';localStorage.removeItem('adjcore_token');
+  $('#gate').hidden=false;
+  return new Promise(res=>{
+    $('#gform').onsubmit=async e=>{
+      e.preventDefault();
+      $('#gerr').textContent='';
+      const r=await fetch(API+'/login',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({password:$('#gpass').value})});
+      if(!r.ok){$('#gerr').textContent='That passphrase is not right.';return;}
+      const j=await r.json();
+      TOKEN=j.token;localStorage.setItem('adjcore_token',TOKEN);
+      $('#gate').hidden=true;res(true);
+    };
+  });
+}
+
+/* ============================ data ============================ */
+async function load(){
+  const r=await fetch(API+'/data',{headers:H(),cache:'no-store'});
+  if(!r.ok){$('#tsub').textContent='no data yet — press Refresh';return;}
+  D=await r.json();
+  if(D.error){$('#tsub').textContent=D.error;return;}
+  STATE=D.state||{extra_testers:[],panel_size:{},notes:{},manual_tests:[]};
+  $('#tname').textContent=D.tournament.short;
+  $('#tsub').textContent=`${D.counts.judges} judges · ${D.counts.teams} teams · ${D.rounds.length} rounds`;
+  $('#stamp').textContent=ago(D.pulled_at);
+  renderAll();
+}
+
+function busy(on,label){const b=$('#btnRefresh');b.disabled=on;b.textContent=on?(label||'Reading…'):'Refresh';}
+
+async function waitIdle(){
+  return new Promise(res=>{
+    const t0=Date.now();
+    const iv=setInterval(async()=>{
+      try{
+        const s=await(await fetch(API+'/status',{headers:H(),cache:'no-store'})).json();
+        if(!s.running||Date.now()-t0>300000){clearInterval(iv);res(s);}
+      }catch(e){if(Date.now()-t0>300000){clearInterval(iv);res({});}}
+    },1500);
+  });
+}
+
+async function refresh(){
+  busy(true,'Reading tab…');
+  let r=await fetch(REFRESH,{method:'POST',headers:{...H(),'Content-Type':'application/json'},body:'{}'});
+  if(CLOUD && (r.status===404||r.status===501)){          // no background functions on this plan
+    REFRESH=API+'/refresh';
+    r=await fetch(REFRESH,{method:'POST',headers:{...H(),'Content-Type':'application/json'},body:'{}'});
+  }
+  const s=await waitIdle();
+  busy(false);
+  if(s&&s.error){toast('Could not read the tab: '+s.error,7000);}
+  else{await load();toast('Up to date with the tab');}
+}
+$('#btnRefresh').onclick=refresh;
+
+async function saveState(msg){
+  busy(true,'Recalculating…');
+  await fetch(API+'/state',{method:'POST',headers:{...H(),'Content-Type':'application/json'},
+    body:JSON.stringify(STATE)});
+  await waitIdle();
+  busy(false);
+  await load();
+  if(msg)toast(msg);
+}
+
+/* ======================= cell comments =======================
+   A comment on one judge-in-one-round. Stored in the same local state file
+   as the tester picks (never written back to the tab). Saving a comment does
+   NOT re-read Tabbycat — nothing derived depends on it.                    */
+const noteKey=(jid,seq)=>seq==null?`j${jid}`:`j${jid}r${seq}`;
+function noteAt(k){return (((STATE||{}).notes)||{})[k]||'';}
+
+/* One comment control, ready to drop anywhere. */
+function noteChip(key,label){
+  const v=noteAt(key);
+  return `<span class="ncell${v?' hasnote':''}" data-note="${esc(key)}" `
+    +`data-label="${esc(label)}"${v?` title="${esc(v)}"`:''}>${v?esc(v):'+ note'}</span>`;
+}
+const noteCell=(key,label)=>`<td class="c">${noteChip(key,label)}</td>`;
+
+/* Ready-made descriptors. A judge keeps ONE comment, so whatever you write
+   on the Judges tab shows up next to them on every other tab too.          */
+const JNOTE={key:r=>noteKey(r.item.id),label:r=>r.item.name};
+const TNOTE={key:r=>'team:'+r.item.team,label:r=>r.item.team};
+const RNOTE={key:r=>'round:'+r.item.abbr,label:r=>`${r.item.abbr} · ${r.item.name}`};
+
+function paintNote(elm,v){
+  elm.classList.toggle('hasnote',!!v);
+  if(v)elm.title=v;else elm.removeAttribute('title');
+  if(elm.classList.contains('ncell'))elm.textContent=v||'+ note';
+}
+
+let _cbar=null;
+
+function closeNote(save){
+  if(!_cbar)return;
+  const b=_cbar;_cbar=null;
+  if(save){
+    const v=b._ta.value.trim(),k=b._k;
+    STATE.notes=STATE.notes||{};
+    if(v!==(STATE.notes[k]||'')){
+      if(v)STATE.notes[k]=v;else delete STATE.notes[k];
+      document.querySelectorAll(`[data-note="${CSS.escape(k)}"]`).forEach(e=>paintNote(e,v));
+      saveNotes(v?'Comment saved':'Comment cleared');
+    }
+  }
+  b.remove();
+}
+
+function openNote(cell){
+  if(_cbar&&_cbar._cell===cell){closeNote(true);return;}   // click again to close
+  closeNote(true);
+  const b=el('div','cbar');
+  b.innerHTML=`<div class="who">${esc(cell.dataset.label||'Comment')}</div>`
+    +`<textarea placeholder="Add a comment…" spellcheck="false"></textarea>`
+    +`<div class="crow"><button class="primary" data-a="save">Save</button>`
+    +`<button class="ghost" data-a="clear">Clear</button>`
+    +`<span class="chint">Enter saves<br>Esc closes</span></div>`;
+  document.body.appendChild(b);
+  const r=cell.getBoundingClientRect();
+  b.style.left=Math.round(Math.min(Math.max(8,r.left+r.width/2-b.offsetWidth/2),
+                                   innerWidth-b.offsetWidth-8))+'px';
+  b.style.top=Math.round(r.bottom+6+b.offsetHeight>innerHeight
+                         ? Math.max(8,r.top-b.offsetHeight-6) : r.bottom+6)+'px';
+  const ta=b.querySelector('textarea');
+  ta.value=noteAt(cell.dataset.note);
+  b._ta=ta;b._k=cell.dataset.note;b._cell=cell;_cbar=b;
+  ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);
+  ta.onkeydown=e=>{
+    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();closeNote(true);}
+    else if(e.key==='Escape'){e.preventDefault();closeNote(false);}
+  };
+  b.onclick=e=>{
+    e.stopPropagation();
+    const a=e.target.dataset.a;
+    if(a==='save')closeNote(true);
+    else if(a==='clear'){ta.value='';closeNote(true);}
+  };
+}
+
+$('#sheet').addEventListener('click',e=>{const c=e.target.closest('[data-note]');
+  if(c){e.stopPropagation();openNote(c);}});
+document.addEventListener('click',e=>{if(_cbar&&!e.target.closest('.cbar'))closeNote(true);});
+window.addEventListener('keydown',e=>{if(e.key==='Escape')closeNote(false);});
+window.addEventListener('resize',()=>closeNote(true));
+
+async function saveNotes(msg){
+  try{
+    const r=await fetch(API+'/state?quiet=1',{method:'POST',
+      headers:{...H(),'Content-Type':'application/json'},body:JSON.stringify(STATE)});
+    if(!r.ok)throw new Error(r.status);
+    if(msg)toast(msg);
+  }catch(e){toast('That comment did not save — check the connection',6000);}
+}
+
+/* ============================ tabs ============================ */
+document.querySelectorAll('nav.tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  document.querySelectorAll('main section').forEach(s=>s.hidden=s.id!=='tab-'+b.dataset.tab);
+  window.scrollTo(0,0);
+});
+function renderAll(){renderNow();renderTesting();renderJudges();renderOutrounds();renderFeedback();}
+
+/* ============================ shared ============================ */
+const liveRound=()=>D.rounds.find(r=>r.draw_made&&!r.completed)||D.rounds.find(r=>!r.completed)||D.rounds[0];
+const drawnRounds=()=>D.rounds.filter(r=>r.draw_made);
+const nonTesters=()=>D.judges.filter(j=>!j.is_tester);
+
+function seenTag(j){
+  if(j.is_tester)                return '<span class="tag t-acc">Tester</span>';
+  if(j.best_seen==='Chair')      return '<span class="tag t-ok">Seen chairing</span>';
+  if(j.best_seen==='Panellist')  return '<span class="tag t-warn">Seen on panel</span>';
+  if(j.best_seen==='Trainee')    return '<span class="tag t-warn">Seen as trainee</span>';
+  return '<span class="tag t-stop">Not seen</span>';
+}
+function headBlock(host,title,sub){
+  const h=el('div','head');h.appendChild(el('h2','',esc(title)));
+  if(sub)h.appendChild(el('p','',sub));host.appendChild(h);return h;
+}
+function statGrid(host,items){
+  const g=el('div','grid g4');
+  items.forEach(([cls,val,lab,sub])=>{
+    const d=el('div','stat '+(cls||''));
+    d.appendChild(el('b','',esc(val)));
+    d.appendChild(el('div','lab',esc(lab)));
+    if(sub)d.appendChild(el('div','sub',sub));
+    g.appendChild(d);
+  });
+  host.appendChild(g);return g;
+}
+function tableBox(host,cols,rows,opts){
+  opts=opts||{};
+  const N=opts.note;                       // {key(row), label(row)} -> adds a Comment column
+  const cs=N?cols.concat([{label:'Comment'}]):cols;
+  const tw=el('div','tw'),t=el('table');
+  t.innerHTML='<thead><tr>'+cs.map(c=>
+    `<th ${c.num?'class="num"':''} ${c.key?`data-k="${c.key}"`:''}>${esc(c.label)}</th>`).join('')+'</tr></thead>';
+  const tb=el('tbody');
+  rows.forEach(r=>{
+    const tr=el('tr',opts.onRow?'clickrow':'');
+    tr.innerHTML=r.cells+(N?noteCell(N.key(r),N.label(r)):'');
+    if(opts.onRow)tr.onclick=e=>{if(e.target.closest('[data-note]'))return;opts.onRow(r.item);};
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb);
+  t.addEventListener('click',e=>{const c=e.target.closest('[data-note]');
+    if(c){e.stopPropagation();openNote(c);}});
+  if(opts.onSort)t.querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>opts.onSort(th.dataset.k));
+  tw.appendChild(t);host.appendChild(tw);return tw;
+}
+
+/* ============================ Right now ============================ */
+function renderNow(){
+  const s=$('#tab-now');s.innerHTML='';
+  const R=liveRound(),pool=nonTesters();
+  const ut=pool.filter(j=>j.test_count===0);
+  const cr=D.judges.filter(j=>j.best_seen==='Chair');
+  const inNow=D.judges.filter(j=>j.checked_in).length;
+  const belowVote=D.judges.filter(j=>j.base_score<(D.tournament.min_voting_score||0));
+  const unrated=D.judges.filter(j=>j.base_score===0);
+
+  headBlock(s,`${R.name} — draw ${R.draw_status.toLowerCase()}`,
+    `Feedback is worth <b>${Math.round(R.feedback_weight*100)}%</b> of a judge's ranking this round. `+
+    (R.outround?`Outround in the ${esc(R.break_category)} break.`:`Prelim.`));
+  statGrid(s,[
+    ['',`${inNow}/${D.counts.judges}`,'Judges in',`${D.counts.speakers_in}/${D.counts.speakers_all} speakers in`],
+    [ut.length?'stop':'ok',ut.length,'Never tested',`of ${pool.length} non-testers`],
+    [cr.length?'ok':'warn',cr.length,'Seen chairing','pool for outround chairs'],
+    ['',D.counts.testers,'Testers',`${D.counts.adjcore} adj core + ${D.counts.testers-D.counts.adjcore} added`],
+  ]);
+
+  headBlock(s,'Worth a look');
+  let any=false;
+  D.eligibility.forEach(e=>{
+    if(e.break_size&&e.teams===0){any=true;
+      s.appendChild(el('div','note s',`<b>No one is eligible for the ${esc(e.name)} break</b>
+        Outrounds are scheduled for ${esc(e.name)} (break of ${e.break_size}) but no team is marked eligible.`));}
+  });
+  if(belowVote.length){any=true;
+    s.appendChild(el('div','note w',`<b>${belowVote.length} judges sit below the voting threshold</b>
+      Rated under ${D.tournament.min_voting_score}, so the allocator will not give them a voting seat.
+      ${unrated.length} are on zero, which usually just means unrated.`));}
+  if(ut.length){any=true;
+    const left=D.rounds.filter(r=>!r.outround&&!r.draw_made).length;
+    s.appendChild(el('div','note w',`<b>${ut.length} judges have not been seen by a tester</b>
+      ${left} prelim${left===1?'':'s'} still to draw — see Testing for who to pair up.`));}
+  if(!any)s.appendChild(el('div','note g','<b>Nothing flagged</b>Eligibility, ratings and testing coverage all look fine.'));
+
+  headBlock(s,'The rounds','Read from the tab — however many rounds and breaks this tournament has.');
+  tableBox(s,[{label:'Round'},{label:'Type'},{label:'Draw'},{label:'Motions'},
+              {label:'Feedback',num:true},{label:'Break'}],
+    D.rounds.map(r=>({item:r,cells:
+      `<td class="nm">${esc(r.abbr)} <span class="sub">${esc(r.name)}</span></td>
+       <td>${r.outround?'<span class="tag t-acc">Outround</span>':'<span class="tag t-mute">Prelim</span>'}</td>
+       <td>${r.draw_made?`<span class="tag t-ok">${esc(r.draw_status)}</span>`:'<span class="tag t-mute">Not started</span>'}</td>
+       <td>${r.motions_released?'<span class="tag t-ok">Out</span>':'<span class="tag t-mute">Held</span>'}</td>
+       <td class="num">${Math.round(r.feedback_weight*100)}%</td>
+       <td>${r.break_category?esc(r.break_category):'<span class="sub">—</span>'}</td>`})),
+    {note:RNOTE});
+}
+
+/* ============================ Testing ============================ */
+function renderTesting(){
+  const s=$('#tab-testing');s.innerHTML='';
+  const drawn=drawnRounds(),testers=D.judges.filter(j=>j.is_tester),pool=nonTesters();
+  const ut=pool.filter(j=>j.test_count===0);
+  const asT=pool.filter(j=>j.best_seen==='Trainee'),asP=pool.filter(j=>j.best_seen==='Panellist');
+  const asC=pool.filter(j=>j.best_seen==='Chair');
+
+  headBlock(s,'Testing',
+    'A judge counts as tested when one of your testers sits on their panel. The letter is the position '+
+    'they were tested <b>in</b> — C chair, P panellist, T trainee. All of it is worked out from the live draw.');
+  statGrid(s,[
+    [ut.length?'stop':'ok',ut.length,'Never tested','no tester has sat with them'],
+    ['warn',asT.length+asP.length,'Seen, not chairing',`${asT.length} as trainee, ${asP.length} on a panel`],
+    [asC.length?'ok':'warn',asC.length,'Seen chairing','cleared for an outround chair'],
+    ['',testers.length,'Testers','adj core plus anyone you add'],
+  ]);
+
+  const next=D.rounds.find(r=>!r.draw_made&&!r.outround);
+  headBlock(s,'Who to test next', next
+    ? `Pair these with a tester when you allocate <b>${esc(next.name)}</b>. Judges who have chaired unwatched come first, then judges nobody has seen.`
+    : 'All prelim draws are made — these are the remaining gaps.');
+  const prio=pool.map(j=>{
+    let sc=0,why=[];
+    if(j.test_count===0){sc+=100;}   // Status column already says Not seen
+    if(j.chaired>0&&!j.tested_as_chair){sc+=60;why.push(['warn','chaired unwatched']);}
+    if(j.test_count>0&&!j.tested_as_chair){sc+=20;why.push(['acc','not seen chairing']);}
+    if(j.base_score>=6){sc+=15;why.push(['ok','outround candidate']);}
+    if(j.checked_in===false){sc-=200;why.push(['mute','not checked in']);}
+    return{...j,_s:sc,_w:why};
+  }).filter(j=>j._s>0).sort((a,b)=>b._s-a._s||b.base_score-a.base_score);
+  const shown=prio.slice(0,40);
+  if(!shown.length)s.appendChild(el('div','empty','Everyone who needs testing has been covered.'));
+  else{
+    tableBox(s,[{label:'Judge'},{label:'Inst'},{label:'Rating',num:true},{label:'Rounds',num:true},
+                {label:'Status'},{label:'Why'}],
+      shown.map(j=>({item:j,cells:
+        `<td class="nm">${esc(j.name)}</td><td class="sub">${esc(j.inst_code)}</td>
+         <td class="num">${j.base_score}</td><td class="num">${j.rounds_judged}</td>
+         <td>${seenTag(j)}</td>
+         <td>${j._w.map(([c,t])=>`<span class="tag t-${c}" style="margin-right:3px">${esc(t)}</span>`).join('')}</td>`})),
+      {onRow:j=>openJudge(j.id),note:JNOTE});
+    if(prio.length>shown.length)
+      s.appendChild(el('div','note',`Showing the top ${shown.length} of ${prio.length}. Use the Judges tab, filtered to “Never tested”, for the full list.`));
+  }
+
+  headBlock(s,'Coverage so far');
+  if(!drawn.length)s.appendChild(el('div','empty','No draw yet. This fills in on its own once a draw is out.'));
+  else{
+    const bar=el('div','bar');
+    bar.appendChild(el('label','chk','<input type="checkbox" id="covGaps"> Only judges not yet seen chairing'));
+    s.appendChild(bar);
+    const wrap=el('div','cov');s.appendChild(wrap);
+    s.appendChild(el('div','legend',
+      '<span><i class="cell C">C</i> tested as chair</span>'+
+      '<span><i class="cell P">P</i> tested as panellist</span>'+
+      '<span><i class="cell T">T</i> tested as trainee</span>'+
+      '<span><i class="cell sat">·</i> judged, no tester present</span>'+
+      '<span><i class="cell none">—</i> not allocated</span>'+
+      '<span><i class="cell sat hasnote">·</i> has a comment — click any cell to add one</span>'));
+    const draw=()=>{
+      const gaps=$('#covGaps').checked;
+      const rows=pool.filter(j=>!gaps||!j.tested_as_chair);
+      const t=el('table');
+      t.innerHTML='<thead><tr><th class="namecell">Judge</th>'+
+        drawn.map(r=>`<th class="r">${esc(r.abbr)}</th>`).join('')+'<th class="r">n</th></tr></thead>';
+      const tb=el('tbody');
+      rows.forEach(j=>{
+        const tr=el('tr','clickrow');
+        tr.onclick=e=>{const cell=e.target.closest('[data-note]');
+          if(cell){e.stopPropagation();openNote(cell);return;} openJudge(j.id);};
+        let c='';
+        drawn.forEach(r=>{
+          const ev=j.tested.find(x=>x.seq===r.seq),sat=j.rounds.find(x=>x.seq===r.seq);
+          const kind=ev?ev.as[0]:(sat?'sat':'none');
+          const text=ev?ev.as[0]:(sat?sat.position[0]:'—');
+          const nk=noteKey(j.id,r.seq),nt=noteAt(nk);
+          c+=`<td class="c"><span class="cell ${kind}${nt?' hasnote':''}" data-note="${nk}" `
+            +`data-label="${esc(j.name)} · ${esc(r.abbr)}"${nt?` title="${esc(nt)}"`:''}>${text}</span></td>`;
+        });
+        tr.innerHTML=`<td class="namecell">${esc(j.name)} <span class="sub">${esc(j.inst_code)}</span></td>`
+          +c+`<td class="c mono">${j.test_count||''}</td>`;
+        tb.appendChild(tr);
+      });
+      t.appendChild(tb);wrap.innerHTML='';wrap.appendChild(t);
+    };
+    $('#covGaps').onchange=draw;draw();
+  }
+
+  headBlock(s,'Who the testers are',
+    'Anyone flagged as adj core in the tab is a tester automatically. Add more below — saved for everyone using this dashboard, never written back to the tab.');
+  tableBox(s,[{label:'Tester'},{label:'Inst'},{label:'Rating',num:true},{label:'How'},
+              {label:'Judges tested',num:true},{label:''}],
+    testers.map(j=>({item:j,cells:
+      `<td class="nm">${esc(j.name)}</td><td class="sub">${esc(j.inst_code)}</td>
+       <td class="num">${j.base_score}</td>
+       <td>${j.tester_source==='Adj core'?'<span class="tag t-acc">Adj core</span>':'<span class="tag t-ok">Added</span>'}</td>
+       <td class="num">${j.tested_others.length}</td>
+       <td>${j.tester_source==='Adj core'?'':`<button class="ghost" data-rm="${j.id}">Remove</button>`}</td>`})),
+    {note:JNOTE});
+  s.querySelectorAll('[data-rm]').forEach(b=>b.onclick=e=>{
+    e.stopPropagation();const id=parseInt(b.dataset.rm);
+    const nm=(D.judges.find(x=>x.id===id)||{}).name||'They';
+    STATE.extra_testers=STATE.extra_testers.filter(x=>x!==id);
+    saveState(nm+' is no longer a tester');});
+
+  const add=el('div','bar');
+  const sel=el('select');sel.id='addTester';
+  sel.appendChild(el('option','','Add a tester…'));
+  pool.slice().sort((a,b)=>b.base_score-a.base_score).forEach(j=>{
+    const o=el('option','',`${esc(j.name)} — ${esc(j.inst_code)} · rating ${j.base_score}`);
+    o.value=j.id;sel.appendChild(o);});
+  const btn=el('button','primary','Make them a tester');
+  btn.onclick=()=>{const v=parseInt(sel.value||0);if(!v)return toast('Pick a judge first');
+    if(!STATE.extra_testers.includes(v))STATE.extra_testers.push(v);
+    saveState(((D.judges.find(x=>x.id===v)||{}).name||'They')+' is now a tester');};
+  add.appendChild(sel);add.appendChild(btn);s.appendChild(add);
+}
+
+/* ============================ Judges ============================ */
+function renderJudges(){
+  const s=$('#tab-judges');s.innerHTML='';
+  headBlock(s,'Judges','Search by name or institution. Click anyone for their whole tournament.');
+  const bar=el('div','bar');
+  bar.innerHTML=`<input type="search" id="q" placeholder="Search judges" autocomplete="off">
+    <select id="fSeen"><option value="">Any testing status</option>
+      <option value="none">Never tested</option>
+      <option value="panel">Seen, not chairing</option>
+      <option value="chair">Seen chairing</option></select>
+    <select id="fRole"><option value="">Everyone</option>
+      <option value="tester">Testers</option>
+      <option value="ind">Independents</option>
+      <option value="inst">Institution-backed</option></select>
+    <label class="chk"><input type="checkbox" id="fIn"> Checked in only</label>`;
+  s.appendChild(bar);
+  const host=el('div');s.appendChild(host);
+  const draw=()=>{
+    const q=($('#q').value||'').toLowerCase().trim(),seen=$('#fSeen').value,
+          role=$('#fRole').value,onlyIn=$('#fIn').checked;
+    let L=D.judges.filter(j=>{
+      if(q&&!(j.name.toLowerCase().includes(q)||j.institution.toLowerCase().includes(q)
+              ||j.inst_code.toLowerCase().includes(q)))return false;
+      if(seen==='none'&&j.test_count>0)return false;
+      if(seen==='panel'&&!(j.test_count>0&&!j.tested_as_chair))return false;
+      if(seen==='chair'&&!j.tested_as_chair)return false;
+      if(role==='tester'&&!j.is_tester)return false;
+      if(role==='ind'&&!j.independent)return false;
+      if(role==='inst'&&j.independent)return false;
+      if(onlyIn&&!j.checked_in)return false;
+      return true;});
+    const k=sortBy.k||'name',dir=sortBy.dir||1;
+    L.sort((a,b)=>{const x=a[k],y=b[k];
+      return (typeof x==='string'?x.localeCompare(y):((x??-1)-(y??-1)))*dir;});
+    host.innerHTML='';
+    host.appendChild(el('div','note a',`<b>${L.length} judge${L.length===1?'':'s'}</b>`+
+      (L.length?`${L.filter(j=>j.test_count===0&&!j.is_tester).length} of them have never been tested.`:'Nothing matches.')));
+    if(!L.length)return;
+    tableBox(host,[{label:'Judge',key:'name'},{label:'Inst',key:'inst_code'},
+      {label:'Rating',key:'base_score',num:true},{label:'Feedback',key:'feedback_avg',num:true},
+      {label:'Rounds',key:'rounds_judged',num:true},{label:'Chaired',key:'chaired',num:true},
+      {label:'Tests',key:'test_count',num:true},{label:'Status'},{label:'In'}],
+      L.map(j=>({item:j,cells:
+        `<td class="nm">${esc(j.name)}${j.independent?' <span class="tag t-mute">ind</span>':''}</td>
+         <td class="sub">${esc(j.inst_code)}</td>
+         <td class="num">${j.base_score}</td><td class="num">${j.feedback_avg??'—'}</td>
+         <td class="num">${j.rounds_judged}</td><td class="num">${j.chaired}</td>
+         <td class="num">${j.test_count||''}</td>
+         <td>${seenTag(j)}</td>
+         <td><i class="dot ${j.checked_in?'d-ok':j.checked_in===false?'d-stop':'d-mute'}"></i></td>`})),
+      {onRow:j=>openJudge(j.id),note:JNOTE,
+       onSort:key=>{sortBy.dir=(sortBy.k===key?-(sortBy.dir||1):1);sortBy.k=key;draw();}});
+  };
+  ['#q','#fSeen','#fRole','#fIn'].forEach(x=>{const n=$(x);n.oninput=draw;n.onchange=draw;});
+  draw();
+}
+
+/* ============================ judge detail ============================ */
+function openJudge(id){
+  const j=D.judges.find(x=>x.id===id);if(!j)return;
+  const sh=$('#sheet');sh.innerHTML='';
+  const top=el('div','top');
+  top.appendChild(el('div','',`<h2>${esc(j.name)}</h2>
+    <div class="who">${esc(j.institution)}${j.independent?' · independent':''}${j.is_tester?' · tester':''}</div>`));
+  const x=el('button','ghost','Close');x.onclick=closeJudge;top.appendChild(x);
+  sh.appendChild(top);
+
+  const f=el('div','facts');
+  [[j.base_score,'Rating'],[j.feedback_avg??'—',`Feedback /${D.tournament.feedback_max}`],
+   [j.rounds_judged,'Rounds'],[j.chaired,'Chaired'],[j.test_count,'Tests'],
+   [j.checked_in?'Yes':j.checked_in===false?'No':'—','In']]
+   .forEach(([v,l])=>f.appendChild(el('div','',`<b>${esc(v)}</b><span>${esc(l)}</span>`)));
+  sh.appendChild(f);
+  sh.appendChild(el('div','dnote','<b>Your comment</b>'+noteChip(noteKey(j.id),j.name)));
+
+  sh.appendChild(el('div','', j.is_tester
+    ? `<div class="note g"><b>This is a tester</b>They have sat with ${j.tested_others.length} judge${j.tested_others.length===1?'':'s'}.</div>`
+    : j.best_seen==='Chair'
+      ? `<div class="note g"><b>Watched chairing</b>Cleared to chair an outround on testing grounds.</div>`
+      : j.best_seen
+        ? `<div class="note w"><b>Seen as a ${esc(j.best_seen.toLowerCase())}, not as a chair</b>
+           A tester has sat with them ${j.test_count} time${j.test_count===1?'':'s'}, but nobody has watched them chair.</div>`
+        : `<div class="note s"><b>No tester has sat with them</b>Pair them with a tester in an upcoming round.</div>`));
+
+  if(j.tested.length){
+    sh.appendChild(el('h4','lbl','Testing history'));
+    const r=el('div','rows');
+    j.tested.forEach(ev=>r.appendChild(el('div','row',
+      `<b>${esc(ev.round)} — tested as ${esc(ev.as)}</b>
+       <div class="m">watched by ${ev.by.map(b=>esc(b.name)+' ('+esc(b.their_position)+')').join(', ')}${ev.manual?' · logged by hand':''}</div>`)));
+    sh.appendChild(r);
+  }
+  if(j.tested_others.length){
+    sh.appendChild(el('h4','lbl','Judges they have tested'));
+    const r=el('div','rows');
+    j.tested_others.forEach(o=>r.appendChild(el('div','row',
+      `<b>${esc(o.name)}</b><div class="m">${esc(o.round)} · as ${esc(o.as)}</div>`)));
+    sh.appendChild(r);
+  }
+
+  sh.appendChild(el('h4','lbl','Their tournament'));
+  if(!j.rounds.length)sh.appendChild(el('div','empty','Not allocated to a room yet.'));
+  else{
+    const r=el('div','rows');
+    const who=p=>esc(p.name)+(p.is_tester?' <span class="tag t-acc">tester</span>':'');
+    j.rounds.slice().sort((a,b)=>a.seq-b.seq).forEach(x=>{
+      const panel=x.panel||[];
+      const chair=x.chair;
+      const others=panel.filter(p=>p.position!=='Chair');
+      let lines='';
+      if(x.position==='Chair'){
+        lines += others.length
+          ? `<div class="m">they chaired · with ${others.map(p=>who(p)+' ('+esc(p.position.toLowerCase())+')').join(', ')}</div>`
+          : `<div class="m">they chaired · solo room</div>`;
+      }else{
+        lines += chair
+          ? `<div class="m">chaired by ${who(chair)}</div>`
+          : `<div class="m">no chair recorded</div>`;
+        if(others.length)
+          lines += `<div class="m">alongside ${others.map(p=>who(p)+' ('+esc(p.position.toLowerCase())+')').join(', ')}</div>`;
+      }
+      r.appendChild(el('div','row',
+        `<b>${esc(x.round)} — ${esc(x.position)}</b>
+         <div class="m">panel of ${x.panel_size} · bracket ${x.bracket??'—'}</div>
+         ${lines}
+         <div class="m">${x.teams.map(t=>esc((t.side||'').toUpperCase())+' '+esc(t.team)).join('  ·  ')}</div>`));
+    });
+    sh.appendChild(r);
+  }
+
+  if(j.feedback.length) sh.appendChild(feedbackBlock(j));
+
+  sh.appendChild(el('h4','lbl','Clashes on file'));
+  sh.appendChild(el('div','rows',`<div class="row">
+    <b>${j.conflicts_team} team · ${j.conflicts_adj} judge · ${j.conflicts_inst} institution</b>
+    ${(!j.conflicts_team&&!j.conflicts_adj)?'<div class="m">no personal clashes declared</div>':''}</div>`));
+
+  $('#detail').hidden=false;document.body.style.overflow='hidden';
+}
+function feedbackBlock(j){
+  const wrap=el('div','');
+  wrap.appendChild(el('h4','lbl','Feedback received'));
+
+  const sum=el('div','fbsum');
+  const d1=v=>v==null?'—':Number(v).toFixed(1);
+  const cell=(v,l)=>`<div><b>${v}</b><span>${l}</span></div>`;
+  sum.innerHTML = cell(d1(j.feedback_avg),`overall · ${j.feedback_n}`)
+    + cell(d1(j.feedback_team_avg),`from teams · ${j.feedback_team_n}`)
+    + cell(d1(j.feedback_judge_avg),`from judges · ${j.feedback_judge_n}`)
+    + cell(j.comment_count,'comments');
+  wrap.appendChild(sum);
+
+  const withC=j.feedback.filter(f=>f.comments&&f.comments.length).length;
+  if(withC) wrap.appendChild(el('p','hint',
+    `${withC} of ${j.feedback.length} have a written comment — those are underlined, click to read.`));
+
+  // group by round, then by who it came from
+  const bySeq=new Map();
+  j.feedback.forEach(f=>{
+    const k=f.seq??0;
+    if(!bySeq.has(k))bySeq.set(k,{round:f.round,team:[],judge:[],other:[]});
+    (bySeq.get(k)[f.from_type]||bySeq.get(k).other).push(f);
+  });
+
+  const box=el('div','box');box.style.marginBottom='13px';
+  const t=el('table','fbtable');
+  t.innerHTML='<thead><tr><th>Rd</th><th>From teams</th><th>From judges</th></tr></thead>';
+  const tb=el('tbody');
+  let uid=0;
+  const openCmt=[];
+  [...bySeq.keys()].sort((a,b)=>a-b).forEach(k=>{
+    const g=bySeq.get(k);
+    const tr=el('tr');
+    const mk=list=>{
+      if(!list.length) return '<span class="sub">—</span>';
+      return '<div class="chips">'+list.map(f=>{
+        const has=f.comments&&f.comments.length;
+        const id='c'+(uid++);
+        if(has) openCmt.push({id,f});
+        return `<button class="fbchip${has?' has':''}${f.ignored?' ign':''}" `+
+               (has?`data-c="${id}" aria-expanded="false"`:'disabled style="cursor:default"')+
+               `><span class="nm">${esc(f.from_name)}</span>`+
+               `<span class="sc">${f.score==null?'—':Number(f.score).toFixed(1)}</span></button>`;
+      }).join('')+'</div>';
+    };
+    tr.innerHTML=`<td class="rnd">${esc(g.round)}</td><td>${mk(g.team.concat(g.other))}</td><td>${mk(g.judge)}</td>`;
+    tb.appendChild(tr);
+    const cr=el('tr');cr.innerHTML='<td colspan="3" style="padding:0"></td>';
+    cr.dataset.holder=String(k);tb.appendChild(cr);
+  });
+  t.appendChild(tb);box.appendChild(t);wrap.appendChild(box);
+
+  // click a chip -> show that comment under its round
+  wrap.querySelectorAll('.fbchip.has').forEach(btn=>{
+    btn.onclick=()=>{
+      const rec=openCmt.find(x=>x.id===btn.dataset.c); if(!rec)return;
+      const row=btn.closest('tr'), holder=row.nextElementSibling.firstElementChild;
+      const on=btn.getAttribute('aria-expanded')==='true';
+      row.parentElement.querySelectorAll('.fbchip.has').forEach(b=>{
+        if(b.closest('tr')===row) b.setAttribute('aria-expanded','false');});
+      if(on){holder.innerHTML='';return;}
+      btn.setAttribute('aria-expanded','true');
+      const f=rec.f;
+      holder.innerHTML=`<div class="cmt">
+        <div class="src">${esc(f.round)} · from ${esc(f.from_name)} (${esc(f.from_type==='team'?'team':'judge')})
+          · scored ${f.score??'—'} of ${D.tournament.feedback_max}${f.ignored?' · ignored':''}${f.confirmed?'':' · unconfirmed'}</div>
+        ${f.comments.map(c=>`<div class="q">${esc(c.q)}</div><div class="a">${esc(c.a)}</div>`).join('')}
+        ${(f.answers||[]).filter(a=>!f.comments.some(c=>c.q===a.q)).map(a=>
+           `<div class="q">${esc(a.q)}</div><div class="a">${esc(a.a)}</div>`).join('')}
+      </div>`;
+    };
+  });
+  return wrap;
+}
+function closeJudge(){$('#detail').hidden=true;document.body.style.overflow='';}
+$('#detail').onclick=e=>{if(e.target.id==='detail')closeJudge();};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeJudge();});
+
+/* ============================ Outrounds ============================ */
+function renderOutrounds(){
+  const s=$('#tab-outrounds');s.innerHTML='';
+  headBlock(s,'Outrounds',
+    'Every break, outround and room count is read from the tab. Change a break size there and this follows.');
+  D.outround_plan.forEach(p=>{
+    const box=el('div','box');
+    const bh=el('div','bh');
+    bh.appendChild(el('h3','',esc(p.name)+' break'));
+    bh.appendChild(el('div','sub',
+      `breaking ${p.break_size} · ${p.rounds.length} outround${p.rounds.length===1?'':'s'}${p.is_general?' · main break':''}`));
+    box.appendChild(bh);
+    const bb=el('div','bb');
+    const elig=D.eligibility.find(e=>e.slug===p.slug&&e.break_size!=null);
+    if(!p.matches)bb.appendChild(el('div','note w',`<b>Round count does not match the break size</b>
+      A break of ${p.break_size} at ${D.tournament.teams_per_debate} teams a room needs ${p.rounds_expected} outrounds; ${p.rounds_configured} are set up.`));
+    if(elig&&elig.teams===0)bb.appendChild(el('div','note s',
+      `<b>No teams eligible</b>Mark eligibility in the tab or this break cannot be generated.`));
+    else if(elig)bb.appendChild(el('div','note g',`<b>${elig.teams} teams eligible</b>Enough for a break of ${p.break_size}.`));
+    const tw=el('div','tw'),t=el('table');
+    t.innerHTML='<thead><tr><th>Round</th><th class="num">Rooms</th><th class="num">Teams</th>'+
+      '<th class="num">Judges</th><th>Panel size</th><th>Draw</th></tr></thead>';
+    const tb=el('tbody');
+    p.rounds.forEach(r=>{
+      const ps=(STATE.panel_size||{})[r.abbr]||3;
+      const tr=el('tr');
+      tr.innerHTML=`<td class="nm">${esc(r.abbr)} <span class="sub">${esc(r.name)}</span></td>
+        <td class="num">${r.rooms}</td><td class="num">${r.teams_in}</td>
+        <td class="num">${r.rooms*ps}</td><td></td>
+        <td>${r.draw_made?`<span class="tag t-ok">${esc(r.draw_status)}</span>`:'<span class="tag t-mute">Not started</span>'}</td>`;
+      const sel=el('select');
+      [1,3,5,7,9].forEach(n=>{const o=el('option','',n);o.value=n;if(n===ps)o.selected=true;sel.appendChild(o);});
+      sel.onchange=()=>{STATE.panel_size=STATE.panel_size||{};STATE.panel_size[r.abbr]=parseInt(sel.value);
+        saveState(`${r.abbr} set to ${sel.value} judges a panel`);};
+      tr.children[4].appendChild(sel);
+      tb.appendChild(tr);
+    });
+    t.appendChild(tb);tw.appendChild(t);bb.appendChild(tw);
+    box.appendChild(bb);s.appendChild(box);
+  });
+
+  headBlock(s,'Who can chair an outround',
+    'Judges a tester has actually watched chairing, best feedback first.');
+  const pool=D.judges.filter(j=>j.tested_as_chair||j.is_tester)
+    .sort((a,b)=>(b.feedback_avg??b.base_score)-(a.feedback_avg??a.base_score));
+  if(!pool.length)s.appendChild(el('div','empty',
+    'Nobody has been watched chairing yet. This fills in as testers sit on panels.'));
+  else tableBox(s,[{label:'Judge'},{label:'Inst'},{label:'Rating',num:true},{label:'Feedback',num:true},
+                   {label:'Chaired',num:true},{label:'Basis'}],
+    pool.map(j=>({item:j,cells:
+      `<td class="nm">${esc(j.name)}</td><td class="sub">${esc(j.inst_code)}</td>
+       <td class="num">${j.base_score}</td><td class="num">${j.feedback_avg??'—'}</td>
+       <td class="num">${j.chaired}</td>
+       <td>${j.is_tester?'<span class="tag t-acc">Tester</span>':'<span class="tag t-ok">Watched chairing</span>'}</td>`})),
+    {onRow:j=>openJudge(j.id),note:JNOTE});
+}
+
+/* ============================ Feedback ============================ */
+function renderFeedback(){
+  const s=$('#tab-feedback');s.innerHTML='';
+  headBlock(s,'Feedback',
+    `Scored ${D.tournament.feedback_min}–${D.tournament.feedback_max}. `+
+    `Chairs rate panellists and panellists rate chairs; teams rate the oralist.`);
+  const withFb=D.judges.filter(j=>j.feedback_n>0);
+  const owing=D.judges.filter(j=>j.owes_feedback&&j.owes_feedback!=='0');
+  const tOwing=(D.teams_owing_feedback||[]).filter(t=>t.owed&&t.owed!=='0');
+  const all=withFb.flatMap(j=>j.feedback.map(f=>f.score)).filter(v=>v!=null);
+  statGrid(s,[
+    ['',withFb.length,'Judges with feedback',`of ${D.counts.judges}`],
+    [owing.length?'warn':'ok',owing.length,'Judges still owing',''],
+    [tOwing.length?'warn':'ok',tOwing.length,'Teams still owing',''],
+    ['',all.length?(all.reduce((a,b)=>a+b,0)/all.length).toFixed(2):'—','Average given',''],
+  ]);
+  if(!withFb.length&&!owing.length&&!tOwing.length){
+    s.appendChild(el('div','empty','No feedback yet — this fills up once the first round is debated.'));return;}
+  if(owing.length){
+    headBlock(s,'Judges who still owe feedback');
+    tableBox(s,[{label:'Judge'},{label:'Inst'},{label:'Owed',num:true},{label:'Done',num:true}],
+      owing.sort((a,b)=>parseFloat(b.owes_feedback)-parseFloat(a.owes_feedback)).map(j=>({item:j,cells:
+        `<td class="nm">${esc(j.name)}</td><td class="sub">${esc(j.inst_code)}</td>
+         <td class="num">${esc(j.owes_feedback)}</td><td class="num">${esc(j.feedback_done_pct)}</td>`})),
+      {onRow:j=>openJudge(j.id),note:JNOTE});}
+  if(tOwing.length){
+    headBlock(s,'Teams who still owe feedback');
+    tableBox(s,[{label:'Team'},{label:'Owed',num:true},{label:'Done',num:true}],
+      tOwing.sort((a,b)=>parseFloat(b.owed)-parseFloat(a.owed)).map(t=>({item:t,cells:
+        `<td class="nm">${esc(t.team)}</td><td class="num">${esc(t.owed)}</td><td class="num">${esc(t.percent)}</td>`})),
+      {note:TNOTE});}
+  if(withFb.length){
+    headBlock(s,'How judges are rating out','Their feedback average against the rating you gave them.');
+    tableBox(s,[{label:'Judge'},{label:'Rating',num:true},{label:'Feedback',num:true},
+                {label:'Pieces',num:true},{label:'Gap',num:true},{label:'Read'}],
+      withFb.sort((a,b)=>(b.feedback_avg??0)-(a.feedback_avg??0)).map(j=>{
+        const g=j.feedback_avg!=null?j.feedback_avg-j.base_score:null;
+        const read=g==null?'—':g>=1.5?'<span class="tag t-ok">above their tag</span>'
+          :g<=-1.5?'<span class="tag t-stop">below their tag</span>'
+          :'<span class="tag t-mute">as expected</span>';
+        return{item:j,cells:`<td class="nm">${esc(j.name)}</td><td class="num">${j.base_score}</td>
+          <td class="num">${j.feedback_avg??'—'}</td><td class="num">${j.feedback_n}</td>
+          <td class="num">${g==null?'—':(g>0?'+':'')+g.toFixed(1)}</td><td>${read}</td>`};}),
+      {onRow:j=>openJudge(j.id),note:JNOTE});}
+}
+
+/* ============================ boot ============================ */
+(async()=>{
+  await detect();
+  $('#foot').textContent = CLOUD
+    ? 'Reads from Tabbycat. Never writes to it. Tester picks are shared across everyone using this link.'
+    : 'Reads from Tabbycat. Never writes to it. Tester picks are saved on this laptop.';
+  await ensureAuth();
+  await load();
+  setInterval(()=>{if(D)$('#stamp').textContent=ago(D.pulled_at);},30000);
+})();
+</script>
+</body>
+</html>

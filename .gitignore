@@ -1,0 +1,37 @@
+# Credentials and anything pulled from a real tournament.
+.env
+tournament.json
+
+# Pulled data. These files carry participant names and — in the feedback tool's
+# case — every adjudicator's url_key, which IS their private ballot-and-feedback
+# URL. Treat any saved pull as credential material: it never goes in git, and
+# it is deleted when the tournament is over.
+feedback/data/
+feedback/summaries/
+tester-tracking/data.json
+tester-tracking/adjcore_state.json
+fold/raw.json
+
+# Built output
+*/dist/
+demo/samples/
+demo/verify-report.json
+fold/tests/shots/
+
+# Logs and locks
+*.log
+.refresh.lock/
+
+# Host state
+.netlify/
+.wrangler/
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# macOS
+.DS_Store

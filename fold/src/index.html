@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Fold</title>
+<meta name="description" content="The fold, the break and the break-round bracket — built from the public tab only.">
+<meta name="color-scheme" content="light dark">
+<!-- The policy travels with the file. netlify.toml / dist/_headers set the same
+     thing as real response headers where the host supports them, but a host that
+     cannot set headers (GitHub Pages, surge) still gets everything except
+     frame-ancestors, which browsers only honour from a header. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23C2410C'/%3E%3Cpath d='M6 11h20M6 17h13M6 23h20' stroke='white' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/*__STYLE__*/
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <div class="wrap hrow">
+    <div class="brand">
+      <div class="mark" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div>
+        <h1 id="tname">The Fold</h1>
+        <p class="sub" id="tsub"></p>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <button class="ghost" id="btn-search" aria-label="Search"><span class="ic">⌕</span> <span class="lbl">Search</span> <kbd>/</kbd></button>
+    <button class="ghost icon" id="btn-theme" aria-label="Switch light or dark">◐</button>
+  </div>
+  <nav class="tabs" aria-label="Views"><div class="wrap" id="tabs" role="tablist"></div></nav>
+</header>
+
+<main id="main" class="wrap">
+  <section id="v-fold"     class="view" role="tabpanel"></section>
+  <section id="v-bracket"  class="view" role="tabpanel" hidden></section>
+  <section id="v-sim"      class="view" role="tabpanel" hidden></section>
+  <section id="v-rounds"   class="view" role="tabpanel" hidden></section>
+  <section id="v-teams"    class="view" role="tabpanel" hidden></section>
+  <section id="v-judges"   class="view" role="tabpanel" hidden></section>
+  <section id="v-schools"  class="view" role="tabpanel" hidden></section>
+  <section id="v-shown"    class="view" role="tabpanel" hidden></section>
+</main>
+
+<footer class="foot"><div class="wrap" id="footnote"></div></footer>
+
+<div class="sheetwrap" id="sheetwrap" hidden>
+  <div class="scrim" data-close="1"></div>
+  <aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Details" tabindex="-1"></aside>
+</div>
+
+<div class="palette" id="palette" hidden>
+  <div class="scrim" data-close="1"></div>
+  <div class="pbox" role="dialog" aria-modal="true" aria-label="Search">
+    <input id="q" type="search" placeholder="Search a team, a judge, a school, a room…" autocomplete="off" spellcheck="false">
+    <ul id="qres" role="listbox"></ul>
+    <div class="phint"><kbd>↑</kbd><kbd>↓</kbd> move · <kbd>↵</kbd> open · <kbd>esc</kbd> close</div>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+/*__DATA__*/
+/*__APP__*/
+</script>
+</body>
+</html>

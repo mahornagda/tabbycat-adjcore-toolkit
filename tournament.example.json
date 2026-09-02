@@ -1,0 +1,70 @@
+{
+  "_comment": [
+    "Copy this file to tournament.json and edit it. That is the only file you",
+    "need to change to point the whole toolkit at your own tournament.",
+    "",
+    "Your tab username and password do NOT go in here. They go in .env, which",
+    "is gitignored — so this file stays safe to commit, screenshot, and paste",
+    "into a chat when you are asking somebody for help.",
+    "",
+    "Nothing about your tournament's SHAPE belongs here either. The number of",
+    "rounds, which are prelims and which are break rounds, your break",
+    "categories and their sizes, how many teams are in a debate, your side",
+    "names, your feedback scale and every public/silent switch are all read",
+    "off the tab every time a tool runs. If you change them mid-tournament,",
+    "the tools follow."
+  ],
+
+  "tournament": {
+    "_comment": "Only for display. Leave name empty and the pages take it from the tab.",
+    "name": "",
+    "short": "",
+    "timezone": "UTC"
+  },
+
+  "tab": {
+    "_comment": [
+      "url  — everything before the tournament name. No trailing slash, no /admin.",
+      "       e.g. https://yourtournament.calicotab.com",
+      "slug — the tournament's own bit of the address, right after the host.",
+      "       If your tab lives at https://x.calicotab.com/worlds26/ the slug is worlds26."
+    ],
+    "url": "https://yourtournament.calicotab.com",
+    "slug": "yourtournament"
+  },
+
+  "publish": {
+    "_comment": [
+      "host — cloudflare (recommended, unmetered bandwidth), netlify, or surge.",
+      "The two project names become your public web addresses:",
+      "  <fold_project>.pages.dev  and  <feedback_project>.pages.dev",
+      "Pick something recognisable — people will bookmark it."
+    ],
+    "host": "cloudflare",
+    "fold_project": "yourtournament-fold",
+    "feedback_project": "yourtournament-feedback"
+  },
+
+  "tester_tracking": {
+    "_comment": [
+      "port — where the local dashboard listens. Change it only if something",
+      "       else on your laptop already uses 8790.",
+      "Who counts as a tester comes from Tabbycat's own 'adjudication core' flag,",
+      "and you can add more people from inside the dashboard."
+    ],
+    "port": 8790
+  },
+
+  "feedback": {
+    "_comment": [
+      "min_comments — below this, a judge gets a short 'little was written' note",
+      "               rather than a paragraph of pattern-finding invented from two",
+      "               lines. Three is a sensible floor.",
+      "model        — which Claude model writes the summaries.",
+      "concurrency  — how many judges are summarised at once."
+    ],
+    "min_comments": 3,
+    "model": "claude-opus-5",
+    "concurrency": 4
+  }
+}

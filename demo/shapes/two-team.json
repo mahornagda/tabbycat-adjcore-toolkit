@@ -1,0 +1,23 @@
+{
+  "name": "Ashfield Invitational 2027",
+  "short": "Ashfield",
+  "slug": "demo2",
+  "seed": 23,
+  "teams_in_debate": 2,
+  "speakers_per_team": 3,
+  "side_names": "aff-neg",
+  "prelims": 5,
+  "teams": 24,
+  "judges": 18,
+  "adjcore": 4,
+  "institutions": 16,
+  "panel_size": 3,
+  "break_categories": [
+    {"name": "Main", "slug": "main", "size": 8, "general": true}
+  ],
+  "rounds_completed": 5,
+  "silent_rounds": [],
+  "break_announced": true,
+  "elim_progress": {"main": 2},
+  "feedback_per_debate": 0.35
+}

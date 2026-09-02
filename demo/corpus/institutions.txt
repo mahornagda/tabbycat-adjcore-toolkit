@@ -1,0 +1,38 @@
+# Invented schools, each with a real country so the flag lookup is exercised
+# across continents. Name|Code|Country
+Northgate University|NGU|United Kingdom
+Rivermouth College|RVM|Canada
+Ashfield Institute of Technology|AIT|Australia
+Belmont State University|BSU|United States
+Cardona National University|CNU|Philippines
+Delmar University|DLM|Brazil
+Eastvale University|EVU|New Zealand
+Fairhaven College|FHC|Ireland
+Greystone University|GRY|South Africa
+Harrowgate University|HRG|United Kingdom
+Ilmenau Technical University|ITU|Germany
+Jelapang University|JLP|Malaysia
+Kestrel Bay University|KBU|Australia
+Larkspur University|LKS|United States
+Meridian University|MRD|Singapore
+Nawapur Institute|NWP|India
+Oakhurst University|OKH|Canada
+Palewell University|PLW|United Kingdom
+Quarrystone College|QRY|Kenya
+Redlands University|RDL|India
+Solvang University|SLV|Denmark
+Tanahputih University|TNP|Indonesia
+Umbral University|UMB|Mexico
+Verdant Hills University|VHU|Philippines
+Westmere University|WSM|Netherlands
+Xanthe University|XAN|Greece
+Yarrowfield College|YRW|Australia
+Zerlina University|ZRL|Argentina
+Alderpoint University|ALP|Japan
+Brackenridge University|BRK|South Korea
+Coralline University|CRL|Sri Lanka
+Duskwater University|DSK|Vietnam
+Emberton University|EMB|Nigeria
+Foxglove College|FXG|Thailand
+Glasswater University|GLW|Pakistan
+Hollowmere University|HLM|Bangladesh

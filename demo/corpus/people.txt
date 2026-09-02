@@ -1,0 +1,26 @@
+# Given names and family names for the demo tournament's invented participants.
+# Deliberately mixed across regions, because a toolkit that ships an Asian
+# sample and an Asian ban list quietly teaches people it only works there.
+#
+# Nobody in this file is real, and nothing generated from it corresponds to any
+# tournament. Edit freely — the demo re-seeds from whatever is here.
+
+[given]
+Amara Anouk Arjun Astrid Aurelio Basma Beatriz Bilal Caleb Camila Chidi Clara
+Dara Dilnoza Ekene Elif Elias Esme Farid Fatima Feliks Gabriela Gaurav Hana
+Hassan Ida Imani Ines Ivan Jamila Javier Jonas Juno Kabir Kaia Kemal Kiran
+Lars Layla Leandro Lina Lucia Maeve Malik Marisol Mateo Meera Mira Nadia
+Nikolai Nour Nuria Oskar Paloma Petra Priya Rafael Rania Rhea Rohan Rosa
+Sabina Salma Samuel Sana Selin Sofia Soren Suri Tadeo Tam Tariq Thandi
+Theo Tomas Ugne Vera Viktor Wren Yara Yusuf Zainab Zeynep Zola
+
+[family]
+Abadi Achebe Adeyemi Almeida Ansari Arslan Baptiste Barreto Bekele Bergman
+Bianchi Cardoso Castellanos Chatterjee Cortez Dahl Dimitrova Duarte Eriksen
+Fabre Farooqi Fernandes Gruber Halvorsen Haddad Ibarra Ilyas Ivanov Jasinski
+Kalinin Karimi Keita Khoury Kovac Kristensen Laurent Lindqvist Madzimure
+Mahmood Marchetti Mbeki Mendoza Mikkelsen Moretti Nakamura Navarro Nazari
+Njoroge Novak Okonkwo Oyelaran Pereira Petrov Quiroga Rahimi Ramanathan
+Reinholt Rivas Rustamova Salcedo Sandoval Schreiber Sepulveda Shrestha
+Sokolov Suleiman Takahashi Tavares Thorne Toledano Vargas Vasquez Velasquez
+Vidal Voronin Wanjiru Weiss Yildirim Zajac Zambrano Zheng Ziegler

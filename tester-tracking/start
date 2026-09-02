@@ -1,0 +1,6 @@
+#!/bin/bash
+# Start the adjcore dashboard.
+cd "$(dirname "$0")"
+set -a; source ../.env; set +a
+export PYTHONWARNINGS=ignore
+exec python3 server.py

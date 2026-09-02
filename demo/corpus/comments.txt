@@ -1,0 +1,110 @@
+# comments.txt — invented written feedback for the demo tournament.
+#
+# One comment per line: TAG | text
+#
+# Placeholders are filled with real entities from the generated tournament, so
+# the mask and the gate have genuine work to do rather than a rehearsal:
+#   {TEAM} {JUDGE} {SCHOOL} {ROUND} {MOTIONWORD} {SCORE} {PLACE}
+#
+# TAGS
+#   praise   something the judge did well
+#   growth   something to work on
+#   split    a view that contradicts other comments about the same judge
+#   thin     the short, low-content kind of comment people actually leave
+#   bait     DELIBERATELY contains something that must never reach a summary — a
+#            team, a school, a round, a score, a side label, a place, a count, or
+#            a quotable phrase. These exist so the demo can show the mask
+#            replacing them and the gate catching whatever the mask missed.
+#            Every real feedback set contains comments like these.
+
+praise | The decision was right and the explanation of why was the clearest I have heard all weekend. You went straight to the point of difference between the top two and stayed there.
+praise | Excellent oral. You structured it around the two questions that actually decided the room instead of walking speaker by speaker.
+praise | You were generous with your time afterwards and the individual feedback was specific enough to act on immediately.
+praise | Very fair chairing. You asked the panel for their reads before giving your own, which is rare and much appreciated.
+praise | You tracked the material closely. Nothing important went unaddressed and you clearly had a note of every substantive claim.
+praise | Set the burdens up front and held both sides to them consistently. That made the call feel principled rather than improvised.
+praise | Warm in the room without losing authority. The debate ran to time and nobody felt rushed.
+praise | Explained the comparative rather than just asserting which side won it. That is the difference between a call and an argument.
+praise | Brought the trainee into the discussion properly and explained the reasoning as you went, which was clearly deliberate teaching.
+praise | You were willing to be persuaded during deliberation and said so openly. It made the panel much better than the sum of its parts.
+praise | Handled a scrappy debate calmly and imposed structure on it that the speakers themselves had not managed.
+praise | The feedback to individual speakers was honest and kind at the same time. You told one of ours something they needed to hear.
+praise | Confident on a difficult call and did not hedge. Even disagreeing, I understood exactly why you landed where you did.
+praise | You noticed a subtle piece of analysis that the rest of the room had missed and gave it the weight it deserved.
+praise | Deliberation was efficient and focused. No circling, no relitigating settled points.
+praise | Very clear about what would have changed your mind, which is the single most useful thing a judge can say.
+praise | You gave credit for engagement rather than only for new material, which rewarded the right behaviour.
+praise | Kept the oral short and the reasoning tight. Respectful of everyone's time and none the worse for it.
+praise | Made a genuine effort to be inclusive in who spoke during deliberation and how long each person had.
+praise | The written feedback afterwards was thorough and matched what you had said out loud, which is not always the case.
+
+growth | The oral was hard to follow. You moved between the rooms' arguments without signposting, and by the end I was not sure what the decisive issue had been.
+growth | You spent a long time on the first half and then covered the closing teams in a sentence each. The bottom half deserved more.
+growth | I did not understand how the burdens were set. It seemed to shift between the start of the oral and the end.
+growth | Deliberation ran well over and a lot of it was restating positions rather than resolving them.
+growth | You gave a lot of weight to a contribution that had not really been defended when it was challenged.
+growth | Please slow down. The reasoning may well have been sound but it was delivered too quickly to check.
+growth | The panel discussion was dominated by one voice and it was not clear you had asked for other reads before settling.
+growth | Individual feedback was very general — "be clearer" is hard to act on without an example of where it went wrong.
+growth | You seemed to have decided early and the deliberation felt like it was working backwards from that.
+growth | Some of the analysis you credited was not actually made in the room, or at least not in the terms you described.
+growth | You did not explain why the losing team lost, only why the winner won. Both halves matter.
+growth | The trainee said almost nothing and was not invited to. A word from you would have changed that.
+growth | Tracking was patchy — a significant response went unmentioned and it may have been the strongest thing said.
+growth | It would help to state your call and then explain it, rather than building to it. We were guessing for several minutes.
+growth | You were dismissive of a question afterwards. Fine to disagree, but the tone landed badly.
+growth | The oral leaned on jargon. A less experienced room would not have followed the middle section.
+growth | You did not seem comfortable with the material and the call reflected uncertainty rather than a judgement.
+growth | Timekeeping was loose and the debate started noticeably late without explanation.
+growth | Consider being explicit about how much weight you are giving to the mechanism versus the impacts. It was doing a lot of hidden work.
+growth | The written feedback was much shorter than what you said in the room, so there was nothing to take away.
+
+split | Very decisive and clear about the call, which I appreciated even though I disagreed with it.
+split | Perhaps too decisive — the oral left no room for the possibility that the room was close, and it was.
+split | You led the discussion well and kept it moving.
+split | You led the discussion a bit too firmly. I did not feel there was space to push back once you had spoken.
+split | The oral was the right length.
+split | The oral was too short for a debate that close.
+split | Comfortable with the material and it showed.
+split | Seemed less confident on this topic than the others I have seen you judge.
+
+thin | Good judge.
+thin | Fine, no complaints.
+thin | Thanks for judging.
+thin | Solid.
+thin | Clear enough.
+thin | Nothing to add.
+
+bait | You gave us a {SCORE} which felt harsh given how the room went, and the oral did not explain the gap.
+bait | {TEAM} clearly won that debate and I do not understand how you had them below us.
+bait | In {ROUND} you were much sharper than this, so I wonder if it was just a long day.
+bait | Your handling of the {MOTIONWORD} material was the best part of the oral — you actually understood the mechanism.
+bait | The opening government case was strong and you underrated it badly.
+bait | Three people on our team said afterwards that the oral was confusing, so it was not just me.
+bait | A panellist told us during the break that the decision had been split, which rather undermined the oral.
+bait | You were clearly more interested in the {MOTIONWORD} debate than in judging it fairly.
+bait | Coming from {PLACE} I am used to a different style, but even so the pace was hard to follow.
+bait | Compared with {JUDGE} on the same panel you were much less clear about the burdens.
+bait | The {SCHOOL} team got a lot more airtime in the oral than we did.
+bait | This was the grand final and the oral did not rise to the occasion.
+bait | You said, and I wrote it down, that the extension was "a restatement wearing a hat", which was both funny and unfair.
+bait | Our closing opposition extension was not engaged with at all in the oral.
+bait | You averaged out the panel rather than deciding, which is not what a chair is for.
+bait | Two of the four teams were never mentioned in the reasoning.
+
+praise | You explained one particular ruling with an analogy that made it instantly obvious. Steal that for future orals.
+praise | Asked good clarifying questions of the panel rather than assuming you had understood their read.
+praise | You separated what was argued from what you personally found convincing, and said so. That was very reassuring.
+growth | There was a long silence at the start of the oral that read as unpreparedness rather than thought.
+growth | You addressed the room rather than the teams, so the feedback felt like a performance instead of a conversation.
+growth | I would like to have heard more about what the winning team did that the others did not, in their own terms.
+split | Firm but fair on time.
+split | Slightly rigid on time in a way that cut off a genuinely important response.
+praise | Your reasoning on the burden question was the most careful I have seen from anyone on this panel all tournament.
+growth | The oral contradicted itself on whether the mechanism mattered, and I could not tell which version was the actual call.
+praise | Good instincts about which clash mattered, and you said so early enough for it to be useful.
+growth | Not enough attention to the bench. The whip speeches did real work and went unacknowledged.
+praise | You were honest that one part of the call was finely balanced, which made the rest more credible.
+growth | Please write the feedback down as well as saying it. There was nothing to refer back to.
+split | Approachable and easy to talk to afterwards.
+split | Hard to approach afterwards — you were already packing up as the oral finished.

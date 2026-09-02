@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Your Feedback</title>
+<meta name="description" content="Consolidated adjudication feedback for judges. Private, anonymised, no scores.">
+<meta name="color-scheme" content="light dark">
+<meta name="robots" content="noindex, nofollow">
+<!-- The policy travels with the file, so a host that cannot set headers still
+     gets everything except frame-ancestors. connect-src is 'self' and nothing
+     else: the page reads one file from this origin and can reach nowhere. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230F766E'/%3E%3Cpath d='M9 10h14M9 16h14M9 22h9' stroke='white' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Inter+Tight:wght@400;500;600;700&display=swap">
+<style>
+/*__STYLE__*/
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <div class="wrap hrow">
+    <div class="brand">
+      <div class="mark" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div>
+        <h1>Your feedback</h1>
+        <p class="sub">{{TOURNAMENT}}</p>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <button class="ghost icon" id="btn-theme" aria-label="Switch light or dark" title="Light / dark">&#9680;</button>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+  <section id="v-gate" class="view">
+    <div class="card lead">
+      <p class="kicker">For judges</p>
+      <h2>Everything that was written about your judging, in one piece.</h2>
+      <p>Teams and co-panellists wrote about you after their rounds. All of it has
+      been read and consolidated into one honest summary of how you judged.</p>
+
+      <form id="form" autocomplete="off">
+        <label for="key">Paste your private URL</label>
+        <input id="key" name="key" type="text" inputmode="url" spellcheck="false"
+               placeholder="{{PRIVATE_URL_EXAMPLE}}">
+        <p class="hint">The same private link you used to submit ballots and feedback. Pasting
+        the whole URL is fine &mdash; only the key at the end is used, and it never leaves
+        your browser.</p>
+        <button class="primary" type="submit" id="go">Show my feedback</button>
+        <p class="err" id="err" hidden></p>
+      </form>
+    </div>
+
+    <div class="card rules">
+      <h3>What this is, and what it deliberately is not</h3>
+      <ul class="ticks">
+        <li><b>No scores.</b> No feedback score, no average, no rank, no count of who wrote in. None of it is here and none of it is coming.</li>
+        <li><b>Anonymous.</b> Nobody is named, and nothing says whether a point came from a team or from someone on your panel.</li>
+        <li><b>Round-blind.</b> Nothing tells you which debate a comment came from &mdash; no round, no motion, no argument, no team.</li>
+        <li><b>Yours alone.</b> Your page is reachable only from your own private key. Nobody has a list.</li>
+      </ul>
+      <p class="fine">Written by AI from the written comments only, then read by the CAP.
+      It is a synthesis, not a transcript, and it paraphrases throughout &mdash; deliberately,
+      because a distinctive phrase would identify whoever wrote it.</p>
+    </div>
+  </section>
+
+  <section id="v-fb" class="view" hidden></section>
+
+</main>
+
+<footer class="foot"><div class="wrap" id="footnote"></div></footer>
+
+<script>
+/*__DATA__*/
+/*__APP__*/
+</script>
+</body>
+</html>

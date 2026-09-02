@@ -1,0 +1,25 @@
+{
+  "name": "Riverbend Open 2027",
+  "short": "Riverbend",
+  "slug": "demo",
+  "seed": 11,
+  "teams_in_debate": 4,
+  "speakers_per_team": 2,
+  "side_names": "gov-opp",
+  "prelims": 9,
+  "teams": 48,
+  "judges": 40,
+  "adjcore": 6,
+  "institutions": 24,
+  "panel_size": 3,
+  "panel_size_from_round": {"1": 2, "2": 3},
+  "break_categories": [
+    {"name": "Open", "slug": "open", "size": 16, "general": true},
+    {"name": "Novice", "slug": "novice", "size": 8, "general": false}
+  ],
+  "rounds_completed": 9,
+  "silent_rounds": [8, 9],
+  "break_announced": true,
+  "elim_progress": {"open": 1.5, "novice": 1},
+  "feedback_per_debate": 0.30
+}

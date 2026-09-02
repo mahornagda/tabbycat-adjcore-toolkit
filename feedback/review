@@ -1,0 +1,98 @@
+#!/bin/bash
+# review — read the summaries the way a judge will, and edit the ones that need it.
+#
+#   ./review                 serve dist/ at localhost:8788 and open it
+#   ./review keys            print a few name + private-URL pairs to test with
+#   ./review read            print every summary as plain text, for a read-through
+#   ./review read Adel       just the judges whose name matches
+#   ./review edit Adel       open that judge's summary in $EDITOR
+#   ./review redo Adel       regenerate that judge from scratch
+#
+# A hand-edit sticks: build.py publishes summaries/ as it finds it and
+# summarise.py never overwrites a file that already exists. The gate still runs
+# on an edited file, so a well-meant tweak that names a team is still caught.
+set -uo pipefail
+cd "$(dirname "$0")"
+
+case "${1:-serve}" in
+
+serve)
+  python3 build.py || exit 1
+  PORT=${PORT:-8788}
+  echo "serving dist/ on http://localhost:$PORT  (ctrl-C to stop)"
+  echo "paste any private URL from './review keys' into the page"
+  (sleep 1; open "http://localhost:$PORT" 2>/dev/null) &
+  cd dist && exec python3 -m http.server "$PORT" --bind 127.0.0.1
+  ;;
+
+keys)
+  python3 - "${2:-}" "${PORT:-8788}" <<'PY'
+import json, os, sys
+b = json.load(open("data/bundles.json"))
+q = (sys.argv[1] or "").lower()
+port = sys.argv[2]
+rows = [v for aid, v in sorted(b.items(), key=lambda kv: kv[1]["name"])
+        if v.get("key") and os.path.exists(f"summaries/{aid}.json")
+        and q in v["name"].lower()]
+print(f"{len(rows)} judges with a summary. These keys are passwords — do not paste them anywhere.\n")
+for v in rows[: (999 if q else 8)]:
+    print(f"  {v['name'][:32]:32s} http://localhost:{port}/#{v['key']}")
+    print(f"  {'':32s} {TAB}/privateurls/{v['key']}/")
+PY
+  ;;
+
+read)
+  python3 - "${2:-}" <<'PY'
+import json, os, sys, textwrap
+q = (sys.argv[1] or "").lower()
+b = json.load(open("data/bundles.json"))
+n = 0
+for aid, rec in sorted(b.items(), key=lambda kv: kv[1]["name"]):
+    p = f"summaries/{aid}.json"
+    if not os.path.exists(p) or q not in rec["name"].lower():
+        continue
+    d = json.load(open(p)); n += 1
+    print("=" * 78)
+    print(f"{d['name']}" + ("   [thin — little was written]" if d.get("thin") else ""))
+    print(f"  file: {p}   (source comments: {len(rec['comments'])})")
+    print("=" * 78)
+    print(textwrap.fill(d["overview"], 78, initial_indent="  ", subsequent_indent="  "))
+    for label, key in (("STRENGTHS", "strengths"), ("TO WORK ON", "growth")):
+        print(f"\n  {label}")
+        for x in d.get(key) or []:
+            print(textwrap.fill("· " + x, 76, initial_indent="    ", subsequent_indent="      "))
+    print("\n  themes: " + ", ".join(d.get("themes") or []) + "\n")
+print(f"{n} summaries")
+PY
+  ;;
+
+edit)
+  [ -n "${2:-}" ] || { echo "which judge? ./review edit <name>"; exit 1; }
+  f=$(python3 - "$2" <<'PY'
+import json, sys
+b = json.load(open("data/bundles.json"))
+q = sys.argv[1].lower()
+hit = [aid for aid, v in b.items() if q in v["name"].lower()]
+print(f"summaries/{hit[0]}.json" if len(hit) == 1 else "")
+PY
+)
+  [ -n "$f" ] || { echo "no single match for '$2'"; exit 1; }
+  ${EDITOR:-nano} "$f"
+  python3 - <<PY
+import json, sys
+sys.path.insert(0, ".")
+import gate, terms
+b = json.load(open("data/bundles.json"))
+aid = "$f".split("/")[-1][:-5]
+bad = gate.check(json.load(open("$f")), b[aid]["comments"], terms.build())
+print("\n".join("  · " + x for x in bad) if bad else "  edit passes the gate")
+PY
+  ;;
+
+redo)
+  [ -n "${2:-}" ] || { echo "which judge? ./review redo <name>"; exit 1; }
+  python3 summarise.py --only "$2" --force
+  ;;
+
+*) sed -n '2,14p' "$0" ;;
+esac
