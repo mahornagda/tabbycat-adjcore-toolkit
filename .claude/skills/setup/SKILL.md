@@ -1,9 +1,9 @@
 ---
 name: setup
-description: Set up the Adjcore Toolkit for a tournament — check prerequisites, prove the install works against the built-in fake Tabbycat, collect the tab details, write the config, connect read-only, run the chosen tools and optionally publish them. Use when the user has just cloned this repo, types /setup, or asks to point the toolkit at their tournament.
+description: Set up the Tabbycat Adjcore Toolkit for a tournament — check prerequisites, prove the install works against the built-in fake Tabbycat, collect the tab details, write the config, connect read-only, run the chosen tools and optionally publish them. Use when the user has just cloned this repo, types /setup, or asks to point the toolkit at their tournament.
 ---
 
-# Setting up the Adjcore Toolkit
+# Setting up the Tabbycat Adjcore Toolkit
 
 You are setting this repository up for one specific tournament. The person you
 are talking to is on an adjudication core. Assume they are comfortable with a

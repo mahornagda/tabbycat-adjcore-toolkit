@@ -8,7 +8,7 @@ PAGE = {
 <div class="btnrow">
   <a class="btn" href="./start/">Set it up</a>
   <a class="btn ghost" href="./samples/fold/">See a sample first</a>
-  <a class="btn ghost" href="https://github.com/REPLACE_ME/adjcore-toolkit">Code on GitHub</a>
+  <a class="btn ghost" href="https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit">Code on GitHub</a>
 </div>
 
 <div class="note">
@@ -18,6 +18,14 @@ PAGE = {
   the data model, the checks, the API — for anyone who wants to change
   something or satisfy themselves it is safe. It is the same pages either way,
   so you can flip between them without losing your place.</p>
+</div>
+
+<div class="note warn">
+  <p><b>Not affiliated with Tabbycat.</b> Tabbycat is a separate project by
+  other people, and all credit for the tab itself belongs to
+  <a href="https://github.com/TabbycatDebate/tabbycat">its team</a>. This is a
+  set of tools that reads a Tabbycat tab and never writes to one. The name says
+  Tabbycat because that is what it reads, not because they endorse it.</p>
 </div>
 
 <h2>The three tools</h2>
@@ -204,9 +212,9 @@ login form, which is how you sign in at all.</p>
   <section>
     <h4>Code</h4>
     <ul>
-      <li><a href="https://github.com/REPLACE_ME/adjcore-toolkit">The repository</a></li>
-      <li><a href="https://github.com/REPLACE_ME/adjcore-toolkit/blob/main/automation/CLAUDE-CODE.md">The Claude Code doc</a></li>
-      <li><a href="https://github.com/REPLACE_ME/adjcore-toolkit/issues">Report a problem</a></li>
+      <li><a href="https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit">The repository</a></li>
+      <li><a href="https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit/blob/main/automation/CLAUDE-CODE.md">The Claude Code doc</a></li>
+      <li><a href="https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit/issues">Report a problem</a></li>
     </ul>
   </section>
 </div>

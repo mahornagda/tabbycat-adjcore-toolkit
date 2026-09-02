@@ -35,8 +35,8 @@ PAGE = {
 
 <h2 id="get">Get the code</h2>
 
-<pre><code>git clone https://github.com/REPLACE_ME/adjcore-toolkit
-cd adjcore-toolkit
+<pre><code>git clone https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit
+cd tabbycat-adjcore-toolkit
 python3 -m pip install requests</code></pre>
 
 <p><code>requests</code> is the only thing the toolkit needs installed. Everything
@@ -92,7 +92,7 @@ from exactly that fake tournament.</p>
 <p>If you have Claude Code installed, you do not have to follow the manual steps
 at all:</p>
 
-<pre><code>cd adjcore-toolkit
+<pre><code>cd tabbycat-adjcore-toolkit
 claude</code></pre>
 
 <p>then type:</p>
@@ -107,7 +107,7 @@ can catch a wrong setting, and then run whichever tools you wanted.</p>
 
 <p>If <code>/setup</code> is not available in your setup, there is a block to
 paste instead in
-<a href="https://github.com/REPLACE_ME/adjcore-toolkit/blob/main/automation/CLAUDE-CODE.md">automation/CLAUDE-CODE.md</a>.
+<a href="https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit/blob/main/automation/CLAUDE-CODE.md">automation/CLAUDE-CODE.md</a>.
 It says the same thing in longer form.</p>
 
 <div class="note">
@@ -258,7 +258,7 @@ python3 pull.py</code></pre>
         content rules four times. Re-run <code>./summarise.py</code>; it only
         does the ones that are missing.</td></tr>
     <tr><td>Something else</td>
-        <td><a href="https://github.com/REPLACE_ME/adjcore-toolkit/issues">Open
+        <td><a href="https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit/issues">Open
         an issue</a>. Include what you ran and what it printed; do not include
         your token.</td></tr>
   </tbody>

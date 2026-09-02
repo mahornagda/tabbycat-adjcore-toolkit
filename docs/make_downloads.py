@@ -17,7 +17,7 @@ import os, sys, zipfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 OUT = os.path.join(HERE, "dist", "downloads")
-NAME = "adjcore-toolkit"
+NAME = "tabbycat-adjcore-toolkit"
 
 # Directories whose contents are included, and the extensions allowed in them.
 TREES = {

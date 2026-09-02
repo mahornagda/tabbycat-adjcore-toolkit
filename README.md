@@ -1,13 +1,18 @@
-# Adjcore Toolkit
+# Tabbycat Adjcore Toolkit
 
 Three tools an adjudication core can run on its own tournament, built on top of
 Tabbycat. They read your tab; none of them can write to it.
 
-**Docs, with a walkthrough of each one: https://adjcore-toolkit.pages.dev**
+> **Not affiliated with Tabbycat.** Tabbycat is a separate project by other
+> people; this is a set of tools that reads a Tabbycat tab and never writes to
+> one. All credit for the tab itself belongs to
+> [the Tabbycat team](https://github.com/TabbycatDebate/tabbycat).
+
+**Docs, with a walkthrough of each one: https://tabbycat-adjcore-toolkit.pages.dev**
 **Try them first — live samples, invented tournament, no setup:**
-[tester tracking](https://adjcore-toolkit.pages.dev/samples/tester-tracking/) ·
-[the fold simulator](https://adjcore-toolkit.pages.dev/samples/fold/) ·
-[judge feedback](https://adjcore-toolkit.pages.dev/samples/feedback/)
+[tester tracking](https://tabbycat-adjcore-toolkit.pages.dev/samples/tester-tracking/) ·
+[the fold simulator](https://tabbycat-adjcore-toolkit.pages.dev/samples/fold/) ·
+[judge feedback](https://tabbycat-adjcore-toolkit.pages.dev/samples/feedback/)
 
 ---
 
@@ -45,8 +50,8 @@ tournament, these will not work for you, and that is deliberate.
 The fastest path, if you have [Claude Code](https://claude.com/claude-code):
 
 ```
-git clone https://github.com/REPLACE_ME/adjcore-toolkit
-cd adjcore-toolkit
+git clone https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit
+cd tabbycat-adjcore-toolkit
 claude
 ```
 

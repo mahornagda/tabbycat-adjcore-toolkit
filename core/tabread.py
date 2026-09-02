@@ -44,7 +44,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import config
 
 SAFE = {"GET", "HEAD", "OPTIONS"}
-UA = "adjcore-toolkit/1.0 (read-only)"
+UA = "tabbycat-adjcore-toolkit/1.0 (read-only)"
 
 
 class ReadOnlyViolation(RuntimeError):

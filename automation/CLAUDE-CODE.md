@@ -7,8 +7,8 @@ setup with you.
 ## The short version
 
 ```
-git clone https://github.com/REPLACE_ME/adjcore-toolkit
-cd adjcore-toolkit
+git clone https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit
+cd tabbycat-adjcore-toolkit
 claude
 ```
 
@@ -33,7 +33,7 @@ Claude Code instead. It says the same thing.
 ---
 
 ```
-I have just cloned the Adjcore Toolkit — three read-only tools that sit on top of
+I have just cloned the Tabbycat Adjcore Toolkit — three read-only tools that sit on top of
 Tabbycat for an adjudication core. Please set it up for my tournament. Read
 .claude/skills/setup/SKILL.md first and follow it; if that file is missing,
 follow this instead.

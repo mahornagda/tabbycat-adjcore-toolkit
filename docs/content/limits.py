@@ -74,7 +74,7 @@ feedback submissions — a large intervarsity. A pull takes well under a minute.
 that scales with judges rather than with data is writing the feedback summaries:
 one model call each, several at a time, so a hundred judges is minutes rather than
 seconds. If you run something on that scale and it struggles,
-<a href="https://github.com/REPLACE_ME/adjcore-toolkit/issues">say so</a>.</p>
+<a href="https://github.com/REPLACE_ME/tabbycat-adjcore-toolkit/issues">say so</a>.</p>
 
 <h2>Next year</h2>
 

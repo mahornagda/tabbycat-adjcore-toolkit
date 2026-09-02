@@ -27,7 +27,7 @@ DIST = os.path.join(HERE, "dist")
 sys.path.insert(0, HERE)
 from annotate import CSS as FIGURE_CSS
 
-SITE = "Adjcore Toolkit"
+SITE = "Tabbycat Adjcore Toolkit"
 AUTHOR = "Mahor Nagda"
 
 # slug, title, nav label, which group it belongs to
