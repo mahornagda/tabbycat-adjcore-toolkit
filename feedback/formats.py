@@ -35,6 +35,22 @@ BP_SIDES = ["OG", "OO", "CG", "CO",
             "opening government", "opening opposition",
             "closing government", "closing opposition"]
 
+# Speaker roles, spelled out. gate.SIDES already catches the abbreviations
+# (PM, DPM, LO, DLO...), but the long forms slipped through: "the Prime
+# Minister" names one speaker on one side just as surely as "OG" does, and in
+# every parliamentary format it is the first government speaker. Roles that
+# contain a side name ("Government Whip") were caught only incidentally, by the
+# side word inside them, and only when that side name happened to be in use.
+#
+# NOTE the bare word "whip" is deliberately absent: it is craft vocabulary the
+# prompt invites, and it does not settle which side is meant.
+ROLE_LABELS = [
+    "prime minister", "deputy prime minister",
+    "leader of the opposition", "deputy leader of the opposition",
+    "member for the government", "member for the opposition",
+    "government whip", "opposition whip",
+]
+
 PROFILES = {
     4: {
         "format_line": "a British Parliamentary debating tournament",
@@ -69,7 +85,7 @@ def profile(teams_in_debate=4, side_names=None):
     if n not in PROFILES:
         p["format_line"] = f"a debating tournament with {n} teams in a debate"
 
-    labels = list(p["extra_side_labels"])
+    labels = list(p["extra_side_labels"]) + list(ROLE_LABELS)
     key = str(side_names or "").strip().lower()
     labels += SIDE_WORDS.get(key, [])
     if n == 4:

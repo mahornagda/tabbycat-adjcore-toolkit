@@ -1,0 +1,36 @@
+{
+  "name": "Asian Parliamentary Open 2027",
+  "short": "AP Open",
+  "slug": "demoap",
+  "seed": 71,
+  "teams_in_debate": 2,
+  "speakers_per_team": 3,
+  "side_names": "gov-opp",
+  "prelims": 6,
+  "teams": 32,
+  "judges": 22,
+  "adjcore": 3,
+  "institutions": 16,
+  "panel_size": 3,
+  "break_categories": [
+    {
+      "name": "Main",
+      "slug": "main",
+      "size": 8,
+      "general": true
+    }
+  ],
+  "rounds_completed": 6,
+  "silent_rounds": [],
+  "break_announced": true,
+  "elim_progress": {
+    "main": 1
+  },
+  "feedback_per_debate": 0.35,
+  "public": {
+    "tab_release__speaker_tab_released": true,
+    "tab_release__team_tab_released": true,
+    "tab_release__speaker_tab_limit": 20,
+    "tab_release__replies_tab_released": false
+  }
+}
